@@ -7,10 +7,10 @@
 --·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
    2015 Jared Lunde © The MIT License (MIT)
    http://github.com/jaredlunde/redis_structures
-   
+
 """
-import hashlib
-import functools
+from redis import StrictRedis
+
 try:
     from ujson import dumps
     from ujson import loads
@@ -18,7 +18,10 @@ except:
     from json import dumps
     from json import loads
     print(RuntimeWarning("`ujson` not found, using `json` instead"))
-from redis import StrictRedis
+
+import hashlib
+import functools
+
 from collections import UserDict
 from collections import OrderedDict
 from collections import UserList
