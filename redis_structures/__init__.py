@@ -24,7 +24,7 @@ from collections import UserDict
 from collections import OrderedDict
 from collections import UserList
 
-from vital.debug.debug2 import *
+from .debug.debug2 import *
 
 
 __all__ = (
