@@ -903,6 +903,7 @@ class RedisSortedSet(BaseRedisStructure):
                 yield (_loads(member[0]), member[1])
             except AssertionError:
                 yield _loads(member)
+
     keys = iter
     def values(self, reverse=False):
         for member, value in self.items(reverse=reverse):
