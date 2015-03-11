@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 
-  ``Redis Structures`` Redis data structures wrapped with Python
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  The MIT License (MIT)
-
-Copyright (c) 2014 Jared Lunde
-http://github.com/jaredlunde
-
+  `Redis Structures`
+   Redis data structures wrapped with Python
+--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
+   2015 Jared Lunde © The MIT License (MIT)
+   http://github.com/jaredlunde/redis_structures
+   
 """
 import hashlib
 import functools

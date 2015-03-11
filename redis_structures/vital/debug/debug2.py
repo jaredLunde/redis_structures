@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 
-  Debug tools
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  The MIT License (MIT)
-
-Copyright (c) 2014 Jared Lunde
-http://github.com/jaredlunde
+  `Debug tools`
+--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
+   2015 Jared Lunde © The MIT License (MIT)
+   http://github.com/jaredlunde
 
 """
 import re
