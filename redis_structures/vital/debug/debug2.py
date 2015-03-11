@@ -22,7 +22,7 @@ from math import floor
 from functools import wraps
 from collections import *
 
-from vital.debug import colors
+from .debug import colors
 
 
 __all__ = (
