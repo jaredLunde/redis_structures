@@ -57,21 +57,25 @@ class BaseRedisStructure:
         self._serialized = (serializer or False) or serialize
         self._conn = connection or StrictRedis(**config)
         self._default = None
+
     def __iter__(self): return iter(self.iter())
     def _redis_key(self, key):
         return "{}:{}".format(self._key, key)
-    def clear(self): return self._conn.delete(self._key)
+
     def get(self, key, default=None):
         try: return self[key]
         except KeyError:
             return default or self._default
+    def clear(self): return self._conn.delete(self._key)
     def pttl(self): return self._conn.pttl(self._key)
     def ttl(self): return self._conn.ttl(self._key)
     def set_ttl(self, ttl): return self._conn.expire(self._key, ttl)
     def set_pttl(self, key, ttl=1000):
         return self._conn.pexpire(self._key, ttl)
+
     def expire_at(self, _time):
         return self._conn.expireat(self._key, round(_time))
+
     def loads(self, val):
         if not self._serialized:
             return val
@@ -102,10 +106,13 @@ class RedisMap(BaseRedisStructure):
       **kwargs):
         super().__init__( name=name, prefix=prefix, **kwargs)
         self.update(data)
+
     @prepr(('name', 'cyan'), '_key', '_serialized', _doc=True)
     def __repr__(self): return
+
     def __setitem__(self, key, value):
         return self._conn.set(self._redis_key(key), self.dumps(value))
+
     def __getitem__(self, key):
         try:
             result = self.loads(self._conn.get(self._redis_key(key)))
@@ -113,10 +120,13 @@ class RedisMap(BaseRedisStructure):
             return result
         except (AssertionError, TypeError):
             raise KeyError('Key `{}` not in `{}`'.format(key, self._key))
+
     def __delitem__(self, key):
         return self._conn.delete(self._redis_key(key))
+
     def __contains__(self, key):
         return self._conn.exists(self._redis_key(key))
+
     def __len__(self):
         raise AttributeError("`RedisMap` structures have no len property")
 
@@ -143,12 +153,16 @@ class RedisMap(BaseRedisStructure):
         data = self._conn.mset({_rk(key): _dumps(value)
             for key, value in data.items()})
         return data
+
     def pttl(self, key): return self._conn.pttl(self._redis_key(key))
     def ttl(self, key): return self._conn.ttl(self._redis_key(key))
+
     def set_ttl(self, key, ttl):
         return self._conn.expire(self._redis_key(key), ttl)
+
     def set_pttl(self, key, ttl):
         return self._conn.pexpire(self._redis_key(key), ttl)
+
     def expire_at(self, key, _time):
         return self._conn.expireat(self._redis_key(key), round(_time))
 
@@ -218,12 +232,14 @@ class RedisDict(BaseRedisStructure):
         ('num_keys', 'purple'), _doc=True)
     def __repr__(self): return
     def __str__(self): return self.__repr__()
+
     def __setitem__(self, key, value):
         pipe = self._conn.pipeline(transaction=False)
         pipe.set(self._redis_key(key), self.dumps(value))
         if key not in self: pipe.hincrby(self._bucket_key, self._key, 1)
         result = pipe.execute()
         return result[0]
+
     def __getitem__(self, key):
         try:
             result = self.loads(self._conn.get(self._redis_key(key)))
@@ -231,15 +247,19 @@ class RedisDict(BaseRedisStructure):
             return result
         except (AssertionError, TypeError):
             raise KeyError('Key `{}` not in `{}`'.format(key, self._key))
+
     def __delitem__(self, key):
         pipe = self._conn.pipeline(transaction=False)
         pipe.delete(self._redis_key(key))
         if key in self: pipe.hincrby(self._bucket_key, self._key, -1)
         result = pipe.execute()
         return result[0]
+
     def __len__(self): return self.num_keys
+
     def __contains__(self, key):
         return self._conn.exists(self._redis_key(key))
+
     def __reversed__(self):
         raise RuntimeError('RedisDict does not support `reversed`')
 
@@ -364,9 +384,11 @@ class RedisDefaultDict(RedisDict):
         self._size_key = self._key+".size"
         self._default = default
         self.update(data)
+
     @prepr(('name', 'cyan'), '_key', '_bucket_key', '_default', '_serialized',
         ('num_keys', 'purple'), _doc=True)
     def __repr__(self): return
+
     def __getitem__(self, key):
         try:
             result = self.loads(self._conn.get(self._redis_key(key)))
@@ -403,6 +425,7 @@ class RedisHash(BaseRedisStructure):
 
     def __setitem__(self, field, value):
         return self._conn.hset(self._key, field, self.dumps(value))
+
     def __getitem__(self, field):
         try:
             result = self.loads(self._conn.hget(self._key, field))
@@ -410,11 +433,15 @@ class RedisHash(BaseRedisStructure):
             return result
         except (AssertionError, TypeError):
             raise KeyError('Key `{}` not in `{}`'.format(field, self._key))
+
     def __delitem__(self, field):
         return self._conn.hdel(self._key, field)
+
     def __len__(self): return self.num_fields
+
     def __contains__(self, field):
         return self._conn.hexists(self._key, field)
+
     def __reversed__(self):
         raise RuntimeError('RedisHash does not support `reversed`')
 
@@ -435,6 +462,7 @@ class RedisHash(BaseRedisStructure):
     def keys(self):
         for field in self._conn.hkeys(self._key):
             yield field
+
     def fields(self): return iter(self.keys())
     def values(self):
         for key, val in self.items():
@@ -477,9 +505,11 @@ class RedisDefaultHash(RedisHash):
         self._size_key = self._key+".size"
         self._default = default
         self.update(data)
+
     @prepr(('name', 'cyan'), '_key', '_default', '_serialized',
         ('num_fields', 'purple'), _doc=True)
     def __repr__(self): return
+
     def __getitem__(self, field):
         try:
             result = self.loads(self._conn.hget(self._redis_key(key)))
@@ -509,6 +539,7 @@ class RedisList(BaseRedisStructure):
     def __str__(self): return self.__repr__()
 
     def __len__(self): return self.size
+
     def __contains__(self, item):
         """ Not recommended for use on large lists due to time
             complexity, but it works"""
@@ -638,10 +669,12 @@ class RedisSet(BaseRedisStructure):
       **kwargs):
         super().__init__(name=name, prefix=prefix, **kwargs)
         self.update(data)
+
     @prepr(('name', 'cyan'), '_key', '_serialized', ('members_size', 'purple'),
         _doc=True)
     def __repr__(self): return
     def __str__(self): return self.__repr__()
+
     def __len__(self): return self.members_size
     def __contains__(self, member):
         return self._conn.sismember(self._key, self.dumps(member))
@@ -797,6 +830,7 @@ class RedisSortedSet(BaseRedisStructure):
 
     def __setitem__(self, member, value):
         return self.add(value, member)
+
     def __getitem__(self, member):
         if isinstance(member, slice):
             #: Get by range
@@ -813,11 +847,15 @@ class RedisSortedSet(BaseRedisStructure):
             except TypeError:
                 raise KeyError('Member `{}` not in `{}`'.format(
                     field, self._key))
+
     def __delitem__(self, member):
         return self._conn.zrem(self._key, self.dumps(member))
+
     def __len__(self): return self.member_size
+
     def __contains__(self, member):
         return self._conn.zcard(self._key, self.dumps(member))
+
     def __reversed__(self): return self.iter(reverse=True)
 
     @property
@@ -827,6 +865,7 @@ class RedisSortedSet(BaseRedisStructure):
         return self._conn.zincrby(self._key, self.dumps(member), by)
     def decr(self, member, by=1):
         return self._conn.zdecrby(self._key, self.dumps(member), by)
+
     def add(self, *args, **kwargs):
         if args or kwargs:
             _dumps = self.dumps
@@ -840,12 +879,19 @@ class RedisSortedSet(BaseRedisStructure):
                 zargs+=[_dumps(x) if (i == 1 and self._serialized) else x
                     for y in kwargs.items() for i, x in enumerate(reversed(y))]
             return self._conn.zadd(self._key, *zargs)
+
     def remove(self, *members):
         self._conn.zrem(self._key, *members)
+
     def rank(self, member):
         return self._conn.zrank(self._key, self.dumps(member))
-    def index(self, member): return self.rank(member)
-    def count(self, min, max): return self._conn.zcount(self._key, min, max)
+
+    def index(self, member):
+        return self.rank(member)
+
+    def count(self, min, max):
+        return self._conn.zcount(self._key, min, max)
+
     def iter(self, start=0, stop=-1, withscores=False, reverse=False):
         """ By index
             ZRANGE """
