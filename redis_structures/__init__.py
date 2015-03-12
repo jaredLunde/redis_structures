@@ -45,8 +45,10 @@ __all__ = (
   `` Redis structures ``
 """
 class BaseRedisStructure:
-    __slots__ = ('name', 'prefix', '_key', '_loads', '_dumps',
+    __slots__ = (
+        'name', 'prefix', '_key', '_loads', '_dumps',
         '_serialized', '_conn', '_default')
+        
     def __init__(self, name="members", serializer=None, serialize=False,
       connection=None, prefix=None, config={}):
         self.name = name
@@ -70,13 +72,11 @@ class BaseRedisStructure:
 
     def clear(self):
         return self._conn.delete(self._key)
-    
+
     def pttl(self): return self._conn.pttl(self._key)
     def ttl(self): return self._conn.ttl(self._key)
     def set_ttl(self, ttl): return self._conn.expire(self._key, ttl)
-    def set_pttl(self, key, ttl=1000):
-        return self._conn.pexpire(self._key, ttl)
-
+    def set_pttl(self, key, ttl=1000): return self._conn.pexpire(self._key, ttl)
     def expire_at(self, _time):
         return self._conn.expireat(self._key, round(_time))
 
@@ -104,8 +104,10 @@ class RedisMap(BaseRedisStructure):
         and not RedisMap. The only advantage to RedisMap is a
         simple {key: value} get, set interface. The size of the
         map is unmonitored. """
-    __slots__ = ("name", "prefix", "_key", "_loads", "_dumps", "_conn",
+    __slots__ = (
+        "name", "prefix", "_key", "_loads", "_dumps", "_conn",
         "_default", "_serialized")
+
     def __init__(self, name="members", data={}, prefix="rs:datatype:map",
       **kwargs):
         super().__init__( name=name, prefix=prefix, **kwargs)
@@ -154,8 +156,9 @@ class RedisMap(BaseRedisStructure):
         if not data:
             return
         _rk, _dumps = self._redis_key, self.dumps
-        data = self._conn.mset({_rk(key): _dumps(value)
-            for key, value in data.items()})
+        data = self._conn.mset({
+            _rk(key): _dumps(value)
+            for key, value in data.items() })
         return data
 
     def pttl(self, key): return self._conn.pttl(self._redis_key(key))
@@ -197,7 +200,8 @@ class RedisMap(BaseRedisStructure):
             if keys:
                 vals = _mget(*keys)
                 for i, key in enumerate(keys):
-                    yield (key.replace(self._key+":", "", 1),
+                    yield (
+                        key.replace(self._key+":", "", 1),
                         _loads(vals[i]))
 
     def clear(self, match="*", count=10000):
@@ -216,8 +220,10 @@ class RedisDict(BaseRedisStructure):
         and not RedisDict. The only advantage to RedisDict is a
         simple {key: value} get, set interface with the ability to
         call a len() on a given group of key/value pairs. """
-    __slots__ = ("name", "prefix", "_key", "_size_mod", "_loads",
+    __slots__ = (
+        "name", "prefix", "_key", "_size_mod", "_loads",
         "_dumps", "_conn", "_default", "_serialized")
+
     def __init__(self, name="members", data={}, prefix="rs:datatype:dict",
       size_mod=5, **kwargs):
         super().__init__(name=name, prefix=prefix, **kwargs)
@@ -274,7 +280,8 @@ class RedisDict(BaseRedisStructure):
     @property
     def _bucket_key(self):
         """ Returns hash bucket key for the redis key """
-        return "{}.size.{}".format(self.prefix, (self._hashed_key//1000) \
+        return "{}.size.{}".format(
+            self.prefix, (self._hashed_key//1000)
             if self._hashed_key > 1000 else self._hashed_key)
     @property
     def _hashed_key(self):
@@ -309,6 +316,7 @@ class RedisDict(BaseRedisStructure):
         if key not in self: pipe.hincrby(self._bucket_key, self._key, 1)
         result = pipe.execute()
         return result[0]
+
     def decr(self, key, by):
         return self._conn.decrby(self._redis_key(key), 1)
 
@@ -341,7 +349,8 @@ class RedisDict(BaseRedisStructure):
             if keys:
                 vals = self._conn.mget(*keys)
                 for i, key in enumerate(keys):
-                    yield (key.replace(self._key+":", "", 1),
+                    yield (
+                        key.replace(self._key+":", "", 1),
                         self.loads(vals[i]))
 
     def update(self, data):
@@ -354,8 +363,9 @@ class RedisDict(BaseRedisStructure):
             exists = pipe.execute().count(True)
             print(exists)
             _rk, _dumps = self._redis_key, self.dumps
-            data = {_rk(key): _dumps(value)
-                for key, value in data.items()}
+            data = {
+                _rk(key): _dumps(value)
+                for key, value in data.items() }
             pipe.mset(data)
             pipe.hincrby(self._bucket_key, self._key, len(data)-exists)
             result = pipe.execute()[0]
@@ -380,8 +390,10 @@ class RedisDict(BaseRedisStructure):
 
 class RedisDefaultDict(RedisDict):
     """ Memory-persistent key/value-backed dictionaries """
-    __slots__ = ("name", "prefix", "_key", "_loads", "_dumps",
+    __slots__ = (
+        "name", "prefix", "_key", "_loads", "_dumps",
         "_conn", "_serialized")
+
     def __init__(self, name="members", data={}, default={},
       prefix="rs:datatype:dict", **kwargs):
         super().__init__(name=name, prefix=prefix, **kwargs)
@@ -415,8 +427,10 @@ class RedisHash(BaseRedisStructure):
         RedisDict and iter() functions are safe here.
 
         It almost always makes sense to use this over RedisDict. """
-    __slots__ = ("name", "prefix", "_key", "_loads", "_dumps", "_conn",
+    __slots__ = (
+        "name", "prefix", "_key", "_loads", "_dumps", "_conn",
         "_default")
+
     def __init__(self, name="members", data={}, prefix="rs:datatype:hash",
       **kwargs):
         super().__init__(name=name, prefix=prefix, **kwargs)
@@ -450,7 +464,8 @@ class RedisHash(BaseRedisStructure):
         raise RuntimeError('RedisHash does not support `reversed`')
 
     @property
-    def num_fields(self):  return int(self._conn.hlen(self._key) or 0)
+    def num_fields(self):
+        return int(self._conn.hlen(self._key) or 0)
 
     def incr(self, field, by=1):
         return self._conn.hincrby(self._key, field, by)
@@ -459,8 +474,8 @@ class RedisHash(BaseRedisStructure):
         return self._conn.hdecrby(self._key, field, by)
 
     def iter(self, match="*", count=10000):
-        for field, value in self._conn.hscan_iter(self._key,
-          match=match, count=count):
+        for field, value in self._conn.hscan_iter(
+          self._key, match=match, count=count):
             yield field
 
     def keys(self):
@@ -473,8 +488,8 @@ class RedisHash(BaseRedisStructure):
             yield val
 
     def items(self, match="*", count=10000):
-        for field, value in self._conn.hscan_iter(self._key,
-          match=match, count=count):
+        for field, value in self._conn.hscan_iter(
+          self._key, match=match, count=count):
             yield field, value
 
     def remove(self, *keys):
@@ -489,8 +504,9 @@ class RedisHash(BaseRedisStructure):
         result = None
         if data:
             _rk, _dumps = self._redis_key, self.dumps
-            data = {_rk(key): _dumps(value)
-                for key, value in data.items()}
+            data = {
+                _rk(key): _dumps(value)
+                for key, value in data.items() }
             result = self._conn.hmset(self._key, data)
         return result
 
@@ -530,8 +546,10 @@ class RedisList(BaseRedisStructure):
         checking whether or not a value is contained within the list does
         not perform well as there is no native function within Redis to do
         so. """
-    __slots__ = ("name", "prefix", "_key", "_loads", "_dumps", "_conn",
+    __slots__ = (
+        "name", "prefix", "_key", "_loads", "_dumps", "_conn",
         "_default", "_serialized")
+
     def __init__(self, name="items", data=[], prefix="rs:datatype:list",
       **kwargs):
         super().__init__(name=name, prefix=prefix, **kwargs)
@@ -645,7 +663,8 @@ class RedisList(BaseRedisStructure):
     def sort(self, start=None, num=None, by=None, get=None, desc=False,
       alpha=False, store=None, reverse=False):
         #: https://redis-py.readthedocs.org/en/latest/#redis.StrictRedis.sort
-        return self._conn.sort(self._key, start=start, num=num, by=by, get=get,
+        return self._conn.sort(
+            self._key, start=start, num=num, by=by, get=get,
             desc=(desc or reverse), alpha=alpha, store=store)
 
     def iter(self, start=0, stop=2000, count=2000):
@@ -667,8 +686,10 @@ class RedisSet(BaseRedisStructure):
     """ Memory-persistent Sets
         This structure behaves nearly the same way that a Python set()
         does. All methods are production-ready. """
-    __slots__ = ("name", "prefix", "_key", "_loads", "_dumps", "_conn",
+    __slots__ = (
+        "name", "prefix", "_key", "_loads", "_dumps", "_conn",
         "_default", "_serialized")
+
     def __init__(self, name="members", data=set(), prefix="rs:datatype:set",
       **kwargs):
         super().__init__(name=name, prefix=prefix, **kwargs)
@@ -699,7 +720,8 @@ class RedisSet(BaseRedisStructure):
             else members
 
     @property
-    def members_size(self): return self._conn.scard(self._key)
+    def members_size(self):
+        return self._conn.scard(self._key)
 
     def add(self, member):
         #: SADD - Only adds single member
@@ -799,8 +821,8 @@ class RedisSet(BaseRedisStructure):
 
     def scan(self, match="*", count=10000, cursor=0):
         #: SSCAN
-        return self._conn.sscan(self._key, cursor=cursor,
-            match=match, count=count)
+        return self._conn.sscan(
+            self._key, cursor=cursor, match=match, count=count)
 
     def iter(self, match="*", count=10000):
         _loads = self.loads
@@ -815,8 +837,10 @@ class RedisSortedSet(BaseRedisStructure):
         You can iter() the set normally or in reverse.
         It is not possible to serialize the values of this structure,
         but you may serialize the member names. """
-    __slots__ = ("name", "prefix", "_key", "_cast", "_loads", "_dumps",
+    __slots__ = (
+        "name", "prefix", "_key", "_cast", "_loads", "_dumps",
         "_conn", "_default", "_serialized")
+
     def __init__(self, name="members", data={}, prefix="rs:datatype:set",
       cast=float, **kwargs):
         #: @data = [(key, value), (key, value)] like OrderedDict
@@ -880,8 +904,9 @@ class RedisSortedSet(BaseRedisStructure):
                     for i, x in enumerate(args)]
             if kwargs:
                 # kwargs format: key=value, key=value
-                zargs+=[_dumps(x) if (i == 1 and self._serialized) else x
-                    for y in kwargs.items() for i, x in enumerate(reversed(y))]
+                zargs+=[
+                    _dumps(x) if (i == 1 and self._serialized) else x
+                    for y in kwargs.items() for i, x in enumerate(reversed(y)) ]
             return self._conn.zadd(self._key, *zargs)
 
     def remove(self, *members):
@@ -900,8 +925,9 @@ class RedisSortedSet(BaseRedisStructure):
         """ By index
             ZRANGE """
         _loads = self.loads
-        for member in self._conn.zrange(self._key, start=start, end=stop,
-          withscores=withscores, desc=reverse, score_cast_func=self._cast):
+        for member in self._conn.zrange(
+          self._key, start=start, end=stop, withscores=withscores, desc=reverse,
+          score_cast_func=self._cast):
             try:
                 assert isinstance(member, tuple)
                 yield (_loads(member[0]), member[1])
@@ -923,9 +949,9 @@ class RedisSortedSet(BaseRedisStructure):
         zfunc = self._conn.zrangebyscore if not reverse \
             else self._conn.zrevrangebyscore
         _loads = self.loads
-        for member in zfunc(self._key, min=min, max=max,
-          start=start, num=num, withscores=withscores,
-          score_cast_func=self._cast):
+        for member in zfunc(
+          self._key, min=min, max=max, start=start, num=num,
+          withscores=withscores, score_cast_func=self._cast):
             try:
                 assert isinstance(member, tuple)
                 yield (_loads(member[0]), member[1])
@@ -933,8 +959,8 @@ class RedisSortedSet(BaseRedisStructure):
                 yield _loads(member)
 
     def itemsbyscore(self, min, max, start=None, num=None, reverse=False):
-        for member in self.iterbyscore(min, max, start, num, withscores=True,
-          reverse=reverse):
+        for member in self.iterbyscore(
+            min, max, start, num, withscores=True, reverse=reverse):
             yield member
 
     def iterscan(self, match="*", count=10000):
@@ -945,15 +971,15 @@ class RedisSortedSet(BaseRedisStructure):
             return map(_loads,
                 self._conn.zscan_iter(self._key, match=match, count=count))
         else:
-            return iter(self._conn.zscan_iter(self._key, match=match,
-                count=count))
+            return iter(self._conn.zscan_iter(
+                self._key, match=match, count=count))
 
     def scan(self, match="*", count=10000, cursor=0):
         #: SSCAN
         if self._serialized:
             _loads = lambda x: (self.loads[0], x[1])
-            return map(_loads, self._conn.zscan(self._key, cursor=cursor,
-                match=match, count=count))
+            return map(_loads, self._conn.zscan(
+                self._key, cursor=cursor, match=match, count=count))
         else:
-            return self._conn.zscan(self._key, cursor=cursor, match=match,
-            count=count)
+            return self._conn.zscan(
+                self._key, cursor=cursor, match=match, count=count)
