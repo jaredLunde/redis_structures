@@ -48,7 +48,7 @@ class BaseRedisStructure:
     __slots__ = (
         'name', 'prefix', '_key', '_loads', '_dumps',
         '_serialized', '_conn', '_default')
-        
+
     def __init__(self, name="members", serializer=None, serialize=False,
       connection=None, prefix=None, config={}):
         self.name = name
@@ -960,7 +960,7 @@ class RedisSortedSet(BaseRedisStructure):
 
     def itemsbyscore(self, min, max, start=None, num=None, reverse=False):
         for member in self.iterbyscore(
-            min, max, start, num, withscores=True, reverse=reverse):
+          min, max, start, num, withscores=True, reverse=reverse):
             yield member
 
     def iterscan(self, match="*", count=10000):
