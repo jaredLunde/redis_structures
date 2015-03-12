@@ -41,9 +41,6 @@ __all__ = (
  'RedisSortedSet',
 )
 
-"""
-  `` Redis structures ``
-"""
 class BaseRedisStructure:
     __slots__ = (
         'name', 'prefix', '_key', '_loads', '_dumps',
