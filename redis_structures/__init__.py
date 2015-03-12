@@ -59,6 +59,7 @@ class BaseRedisStructure:
         self._default = None
 
     def __iter__(self): return iter(self.iter())
+
     def _redis_key(self, key):
         return "{}:{}".format(self._key, key)
 
@@ -66,7 +67,10 @@ class BaseRedisStructure:
         try: return self[key]
         except KeyError:
             return default or self._default
-    def clear(self): return self._conn.delete(self._key)
+
+    def clear(self):
+        return self._conn.delete(self._key)
+    
     def pttl(self): return self._conn.pttl(self._key)
     def ttl(self): return self._conn.ttl(self._key)
     def set_ttl(self, ttl): return self._conn.expire(self._key, ttl)
