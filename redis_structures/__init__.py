@@ -849,7 +849,7 @@ class RedisSortedSet(BaseRedisStructure):
             self.add(*data)
 
     @prepr(('name', 'cyan'), '_key', '_serialized', ('member_size', 'purple'),
-        _doc=True)
+        '_cast', _doc=True)
     def __repr__(self): return
     def __str__(self): return self.__repr__()
 
