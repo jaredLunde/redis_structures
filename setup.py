@@ -12,7 +12,6 @@ install_reqs = parse_requirements(
 
 # reqs is a list of requirement
 reqs = [str(ir.req) for ir in install_reqs]
-print(reqs)
 setup(
     name='redis_structures',
     version='0.0.1b1',
@@ -21,7 +20,4 @@ setup(
     author_email='jared.lunde@gmail.com',
     url='https://github.com/jaredlunde/redis_structures',
     install_requires=reqs,
-    dependency_links=[
-        "git+http://github.com/jaredlunde/redis_structures#egg=redis_structures"
-    ],
     py_modules=['redis_structures'] )
