@@ -17,4 +17,4 @@ setup(
     author_email='jared.lunde@gmail.com',
     url='https://github.com/jaredlunde/redis_structures',
     install_requires=[str(ir.req) for ir in install_reqs],
-    packages=['redis_structures'])
+    packages=['redis_structures', 'redis_structures.vital'])
