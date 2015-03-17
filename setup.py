@@ -20,4 +20,4 @@ setup(
     author_email='jared.lunde@gmail.com',
     url='https://github.com/jaredlunde/redis_structures',
     install_requires=reqs,
-    packages='redis_structures')
+    packages=['redis_structures'])
