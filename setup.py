@@ -14,10 +14,10 @@ install_reqs = parse_requirements(
 reqs = [str(ir.req) for ir in install_reqs]
 setup(
     name='redis_structures',
-    version='0.0.1b1',
+    version='0.0.1',
     description='Redis data structures wrapped with Python 3.',
     author='Jared Lunde',
     author_email='jared.lunde@gmail.com',
     url='https://github.com/jaredlunde/redis_structures',
     install_requires=reqs,
-    py_modules=['redis_structures'] )
+    packages='redis_structures')
