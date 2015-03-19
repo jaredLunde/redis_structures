@@ -235,7 +235,8 @@ class RedisDict(BaseRedisStructure):
                                   #: Default: 5 = 100,000 dicts
         self.update(data)
 
-    @prepr(('name', 'cyan'), '_key', '_bucket_key', '_serialized',
+    @prepr(
+        ('name', 'cyan'), '_key', '_bucket_key', '_serialized',
         ('num_keys', 'purple'), _doc=True)
     def __repr__(self): return
     def __str__(self): return self.__repr__()
@@ -398,7 +399,8 @@ class RedisDefaultDict(RedisDict):
         self._default = default
         self.update(data)
 
-    @prepr(('name', 'cyan'), '_key', '_bucket_key', '_default', '_serialized',
+    @prepr(
+        ('name', 'cyan'), '_key', '_bucket_key', '_default', '_serialized',
         ('num_keys', 'purple'), _doc=True)
     def __repr__(self): return
 
@@ -433,7 +435,8 @@ class RedisHash(BaseRedisStructure):
         super().__init__(name=name, prefix=prefix, **kwargs)
         self.update(data)
 
-    @prepr(('name', 'cyan'), '_key', '_serialized', ('num_fields', 'purple'),
+    @prepr(
+        ('name', 'cyan'), '_key', '_serialized', ('num_fields', 'purple'),
         _doc=True)
     def __repr__(self): return
     def __str__(self): return self.__repr__()
@@ -523,7 +526,8 @@ class RedisDefaultHash(RedisHash):
         self._default = default
         self.update(data)
 
-    @prepr(('name', 'cyan'), '_key', '_default', '_serialized',
+    @prepr(
+        ('name', 'cyan'), '_key', '_default', '_serialized',
         ('num_fields', 'purple'), _doc=True)
     def __repr__(self): return
 
@@ -552,7 +556,8 @@ class RedisList(BaseRedisStructure):
         super().__init__(name=name, prefix=prefix, **kwargs)
         self.extend(data)
 
-    @prepr(('name', 'cyan'), '_key', '_serialized', ('size', 'purple'),
+    @prepr(
+        ('name', 'cyan'), '_key', '_serialized', ('size', 'purple'),
         _doc=True)
     def __repr__(self): return
     def __str__(self): return self.__repr__()
@@ -692,7 +697,8 @@ class RedisSet(BaseRedisStructure):
         super().__init__(name=name, prefix=prefix, **kwargs)
         self.update(data)
 
-    @prepr(('name', 'cyan'), '_key', '_serialized', ('members_size', 'purple'),
+    @prepr(
+        ('name', 'cyan'), '_key', '_serialized', ('members_size', 'purple'),
         _doc=True)
     def __repr__(self): return
     def __str__(self): return self.__repr__()
@@ -848,7 +854,8 @@ class RedisSortedSet(BaseRedisStructure):
         else:
             self.add(*data)
 
-    @prepr(('name', 'cyan'), '_key', '_serialized', ('member_size', 'purple'),
+    @prepr(
+        ('name', 'cyan'), '_key', '_serialized', ('member_size', 'purple'),
         '_cast', _doc=True)
     def __repr__(self): return
     def __str__(self): return self.__repr__()

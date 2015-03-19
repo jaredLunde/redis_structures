@@ -2,12 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 
-  SIMPLE SHELL COLORS :: COLOR WRAPPERS FOR SHELL MESSAGES
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  The MIT License (MIT)
-
-Copyright (c) 2014 Jared Lunde
-http://github.com/jaredlunde
+  `Console color references`
+--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
+   2015 Jared Lunde © The MIT License (MIT)
 
 """
 # Standard colors
