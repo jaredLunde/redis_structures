@@ -11,7 +11,7 @@ install_reqs = parse_requirements(
     session=uuid.uuid1())
 setup(
     name='redis_structures',
-    version='0.0.1a',
+    version='0.0.1a0',
     description='Redis data structures wrapped with Python 3.',
     author='Jared Lunde',
     author_email='jared.lunde@gmail.com',
