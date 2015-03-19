@@ -73,7 +73,7 @@ class BaseRedisStructure:
     def pttl(self): return self._conn.pttl(self._key)
     def ttl(self): return self._conn.ttl(self._key)
     def set_ttl(self, ttl): return self._conn.expire(self._key, ttl)
-    def set_pttl(self, key, ttl=1000): return self._conn.pexpire(self._key, ttl)
+    def set_pttl(self, ttl=300): return self._conn.pexpire(self._key, ttl)
     def expire_at(self, _time):
         return self._conn.expireat(self._key, round(_time))
 

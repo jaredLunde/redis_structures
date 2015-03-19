@@ -9,6 +9,7 @@ install_reqs = parse_requirements(
     os.path.dirname(os.path.realpath(__file__))+\
     "/requirements.txt",
     session=uuid.uuid1())
+    
 setup(
     name='redis_structures',
     version='0.0.1a0',
