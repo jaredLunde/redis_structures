@@ -1,12 +1,12 @@
 # redis_structures
 Pythonic data structures backed by Redis. Full documentation is coming soon.
 
-* [RedisMap](#redismap)
-* [RedisDict](#redisdict)
-* [RedisHash](#redishash)
-* [RedisList](#redislist)
-* [RedisSet](#redisset)
-* [RedisSortedSet](#redissortedset)
+* [RedisMap](#redismap) -> `dict`
+* [RedisDict](#redisdict) -> `dict`
+* [RedisHash](#redishash) -> `dict`
+* [RedisList](#redislist) -> `list`
+* [RedisSet](#redisset) -> `set`
+* [RedisSortedSet](#redissortedset) -> `dict` and `list` hybrid
 
 #### RedisMap
 > Memory-persistent key/value-backed mapping
