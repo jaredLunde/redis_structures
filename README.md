@@ -6,7 +6,7 @@ Pythonic data structures backed by Redis. Full documentation is coming soon.
 * [RedisHash](#redishash) behaves like `dict()`
 * [RedisList](#redislist) behaves like `list()`
 * [RedisSet](#redisset) behaves like `set()`
-* [RedisSortedSet](#redissortedset) behaves like `dict` and `list` hybrid
+* [RedisSortedSet](#redissortedset) behaves like `dict()` and `list()` hybrid
 
 #### RedisMap
 > Memory-persistent key/value-backed mapping
