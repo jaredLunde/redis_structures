@@ -36,6 +36,9 @@ print(redis_map["hello"])
 print(redis_map.get('world', 'hello')) 
 # hello
 
+len(redis_map)
+# AttributeError: `RedisMap` structures have no len property
+
 redis_map.clear()
 print(redis_map['hello']) 
 # None
@@ -79,6 +82,9 @@ for v in redis_dict.values():
     print(v)
 # curls
 # world
+
+len(redis_dict)
+# 2
 
 print("needle" in redis_dict)
 # False
