@@ -1,7 +1,9 @@
 # redis_structures
-Pythonic data structures backed by Redis.
+Pythonic data structures backed by Redis. Full documentation is coming soon.
 
-## Full documentation coming soon.
+* [RedisMap](#redismap)
+* [RedisDict](#redisdict)
+* * [RedisDict](#redisdict)
 
 #### RedisMap
 > Memory-persistent key/value-backed mapping
