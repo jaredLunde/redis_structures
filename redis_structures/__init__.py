@@ -17,7 +17,6 @@ try:
 except:
     from json import dumps
     from json import loads
-    print(RuntimeWarning("`ujson` not found, using `json` instead"))
 
 import hashlib
 import functools
@@ -46,14 +45,15 @@ class BaseRedisStructure:
         'name', 'prefix', '_key', '_loads', '_dumps',
         '_serialized', '_conn', '_default')
 
-    def __init__(self, name="members", serializer=None, serialize=False,
-      connection=None, prefix=None, config={}):
+    def __init__(self, name="members", connection=None, serializer=None,
+      serialize=False, prefix=None, config={}):
         self.name = name
         self.prefix = prefix
         self._key = "{}:{}".format(prefix.strip(":"), name).strip(":")
         self._loads = serializer.loads if serializer else loads
         self._dumps = serializer.dumps if serializer else dumps
-        self._serialized = (serializer or False) or serialize
+        self._serialized = (True if serializer is not None else False) or \
+            serialize
         self._conn = connection or StrictRedis(**config)
         self._default = None
 
@@ -63,7 +63,8 @@ class BaseRedisStructure:
         return "{}:{}".format(self._key, key)
 
     def get(self, key, default=None):
-        try: return self[key]
+        try:
+            return self[key]
         except KeyError:
             return default or self._default
 
