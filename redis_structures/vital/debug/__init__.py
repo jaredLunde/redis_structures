@@ -20,7 +20,7 @@ from math import floor
 from functools import wraps
 from collections import *
 
-from .debug import colors
+from . import colors
 
 
 __all__ = (
