@@ -25,7 +25,7 @@ from collections import UserDict
 from collections import OrderedDict
 from collections import UserList
 
-from vital.debug.debug2 import *
+from .vital.debug import *
 
 
 __all__ = (
@@ -225,15 +225,15 @@ class RedisDict(BaseRedisStructure):
     def __init__(self, name="members", data={}, prefix="rs:datatype:dict",
       size_mod=5, **kwargs):
         super().__init__(name=name, prefix=prefix, **kwargs)
-        self._size_mod = size_mod #: 10**_size_mod is for estimated
-                                  #  number of dicts within a given
-                                  #  @prefix. It's purpose is to
-                                  #  properly distribute the dict_size
-                                  #  hash buckets. If your dict length
-                                  #  starts to go over the bucket sizes,
-                                  #  some memory optimization is lost
-                                  #  in storing the key lengths.
-                                  #: Default: 5 = 100,000 dicts
+        self._size_mod = size_mod  #: 10**_size_mod is for estimated
+                                   #  number of dicts within a given
+                                   #  @prefix. It's purpose is to
+                                   #  properly distribute the dict_size
+                                   #  hash buckets. If your dict length
+                                   #  starts to go over the bucket sizes,
+                                   #  some memory optimization is lost
+                                   #  in storing the key lengths.
+                                   #: Default: 5 = 100,000 dicts
         self.update(data)
 
     @prepr(
