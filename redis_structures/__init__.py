@@ -81,18 +81,12 @@ class BaseRedisStructure:
     def loads(self, val):
         if not self._serialized:
             return val
-        try:
-            return self._loads(val)
-        except (ValueError, TypeError):
-            return val
+        return self._loads(val)
 
     def dumps(self, val):
         if not self._serialized:
             return val
-        try:
-            return self._dumps(val)
-        except (ValueError, TypeError):
-            return val
+        return self._dumps(val)
 
 
 class RedisMap(BaseRedisStructure):
