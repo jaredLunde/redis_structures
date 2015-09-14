@@ -40,7 +40,7 @@ __all__ = (
  'RedisSortedSet',
 )
 
-class BaseRedisStructure:
+class BaseRedisStructure(object):
     __slots__ = (
         'name', 'prefix', '_key', '_loads', '_dumps',
         '_serialized', '_conn', '_default')
