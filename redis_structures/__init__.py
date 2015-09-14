@@ -59,7 +59,11 @@ class BaseRedisStructure:
 
     def __iter__(self): return iter(self.iter())
 
-    def _redis_key(self, key):
+    @property
+    def key_prefix(self):
+        return self._key
+
+    def get_redis_key(self, key):
         return "{}:{}".format(self._key, key)
 
     def get(self, key, default=None):
@@ -109,21 +113,21 @@ class RedisMap(BaseRedisStructure):
     def __repr__(self): return
 
     def __setitem__(self, key, value):
-        return self._conn.set(self._redis_key(key), self.dumps(value))
+        return self._conn.set(self.get_redis_key(key), self.dumps(value))
 
     def __getitem__(self, key):
         try:
-            result = self.loads(self._conn.get(self._redis_key(key)))
+            result = self.loads(self._conn.get(self.get_redis_key(key)))
             assert result
             return result
         except (AssertionError, TypeError):
             raise KeyError('Key `{}` not in `{}`'.format(key, self._key))
 
     def __delitem__(self, key):
-        return self._conn.delete(self._redis_key(key))
+        return self._conn.delete(self.get_redis_key(key))
 
     def __contains__(self, key):
-        return self._conn.exists(self._redis_key(key))
+        return self._conn.exists(self.get_redis_key(key))
 
     def __len__(self):
         raise AttributeError("`RedisMap` structures have no len property")
@@ -131,39 +135,39 @@ class RedisMap(BaseRedisStructure):
     def set(self, key, value):
         self[key] = value
     def setex(self, key, value, ttl=0):
-        return self._conn.setex(self._redis_key(key),
+        return self._conn.setex(self.get_redis_key(key),
             ttl, self.dumps(value))
 
     def incr(self, key, by):
-        return self._conn.incrby(self._redis_key(key), 1)
+        return self._conn.incrby(self.get_redis_key(key), 1)
 
     def decr(self, key, by):
-        return self._conn.decrby(self._redis_key(key), 1)
+        return self._conn.decrby(self.get_redis_key(key), 1)
 
     def mget(self, *keys):
-        keys = map(self._redis_key, keys)
+        keys = map(self.get_redis_key, keys)
         return list(map(self.loads, self._conn.mget(*keys)))
 
     def update(self, data):
         if not data:
             return
-        _rk, _dumps = self._redis_key, self.dumps
+        _rk, _dumps = self.get_redis_key, self.dumps
         data = self._conn.mset({
             _rk(key): _dumps(value)
             for key, value in data.items() })
         return data
 
-    def pttl(self, key): return self._conn.pttl(self._redis_key(key))
-    def ttl(self, key): return self._conn.ttl(self._redis_key(key))
+    def pttl(self, key): return self._conn.pttl(self.get_redis_key(key))
+    def ttl(self, key): return self._conn.ttl(self.get_redis_key(key))
 
     def set_ttl(self, key, ttl):
-        return self._conn.expire(self._redis_key(key), ttl)
+        return self._conn.expire(self.get_redis_key(key), ttl)
 
     def set_pttl(self, key, ttl):
-        return self._conn.pexpire(self._redis_key(key), ttl)
+        return self._conn.pexpire(self.get_redis_key(key), ttl)
 
     def expire_at(self, key, _time):
-        return self._conn.expireat(self._redis_key(key), round(_time))
+        return self._conn.expireat(self.get_redis_key(key), round(_time))
 
     def remove(self, *keys):
         return self._conn.delete(*keys)
@@ -238,14 +242,14 @@ class RedisDict(BaseRedisStructure):
 
     def __setitem__(self, key, value):
         pipe = self._conn.pipeline(transaction=False)
-        pipe.set(self._redis_key(key), self.dumps(value))
+        pipe.set(self.get_redis_key(key), self.dumps(value))
         if key not in self: pipe.hincrby(self._bucket_key, self._key, 1)
         result = pipe.execute()
         return result[0]
 
     def __getitem__(self, key):
         try:
-            result = self.loads(self._conn.get(self._redis_key(key)))
+            result = self.loads(self._conn.get(self.get_redis_key(key)))
             assert result
             return result
         except (AssertionError, TypeError):
@@ -253,7 +257,7 @@ class RedisDict(BaseRedisStructure):
 
     def __delitem__(self, key):
         pipe = self._conn.pipeline(transaction=False)
-        pipe.delete(self._redis_key(key))
+        pipe.delete(self.get_redis_key(key))
         if key in self: pipe.hincrby(self._bucket_key, self._key, -1)
         result = pipe.execute()
         return result[0]
@@ -261,7 +265,7 @@ class RedisDict(BaseRedisStructure):
     def __len__(self): return self.num_keys
 
     def __contains__(self, key):
-        return self._conn.exists(self._redis_key(key))
+        return self._conn.exists(self.get_redis_key(key))
 
     def __reversed__(self):
         raise RuntimeError('RedisDict does not support `reversed`')
@@ -300,18 +304,18 @@ class RedisDict(BaseRedisStructure):
         self[key] = value
 
     def mget(self, *keys):
-        keys = map(self._redis_key, keys)
+        keys = map(self.get_redis_key, keys)
         return list(map(self.loads, self._conn.mget(*keys)))
 
     def incr(self, key, by):
         pipe = self._conn.pipeline(transaction=False)
-        pipe.incrby(self._redis_key(key), 1)
+        pipe.incrby(self.get_redis_key(key), 1)
         if key not in self: pipe.hincrby(self._bucket_key, self._key, 1)
         result = pipe.execute()
         return result[0]
 
     def decr(self, key, by):
-        return self._conn.decrby(self._redis_key(key), 1)
+        return self._conn.decrby(self.get_redis_key(key), 1)
 
     def iter(self, match="*", count=10000):
         replace_this = self._key+":"
@@ -355,7 +359,7 @@ class RedisDict(BaseRedisStructure):
                 _exists(k)
             exists = pipe.execute().count(True)
             print(exists)
-            _rk, _dumps = self._redis_key, self.dumps
+            _rk, _dumps = self.get_redis_key, self.dumps
             data = {
                 _rk(key): _dumps(value)
                 for key, value in data.items() }
@@ -401,7 +405,7 @@ class RedisDefaultDict(RedisDict):
 
     def __getitem__(self, key):
         try:
-            result = self.loads(self._conn.get(self._redis_key(key)))
+            result = self.loads(self._conn.get(self.get_redis_key(key)))
             assert result
             return result
         except (AssertionError, TypeError):
@@ -498,7 +502,7 @@ class RedisHash(BaseRedisStructure):
     def update(self, data):
         result = None
         if data:
-            _rk, _dumps = self._redis_key, self.dumps
+            _rk, _dumps = self.get_redis_key, self.dumps
             data = {
                 _rk(key): _dumps(value)
                 for key, value in data.items() }
@@ -528,7 +532,7 @@ class RedisDefaultHash(RedisHash):
 
     def __getitem__(self, field):
         try:
-            result = self.loads(self._conn.hget(self._redis_key(key)))
+            result = self.loads(self._conn.hget(self.get_redis_key(key)))
             assert result
             return result
         except (AssertionError, TypeError):
@@ -905,7 +909,7 @@ class RedisSortedSet(BaseRedisStructure):
                 # kwargs format: key=value, key=value
                 zargs+=[
                     _dumps(x) if (i == 1 and self._serialized) else x
-                    for y in kwargs.items() for i, x in enumerate(reversed(y)) ]
+                    for y in kwargs.items() for i, x in enumerate(reversed(y))]
             return self._conn.zadd(self._key, *zargs)
 
     def remove(self, *members):
@@ -925,8 +929,8 @@ class RedisSortedSet(BaseRedisStructure):
             ZRANGE """
         _loads = self.loads
         for member in self._conn.zrange(
-          self._key, start=start, end=stop, withscores=withscores, desc=reverse,
-          score_cast_func=self._cast):
+          self._key, start=start, end=stop, withscores=withscores,
+          desc=reverse, score_cast_func=self._cast):
             try:
                 assert isinstance(member, tuple)
                 yield (_loads(member[0]), member[1])
