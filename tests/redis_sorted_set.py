@@ -366,7 +366,7 @@ class TestJSONRedisSortedSetReversed(TestJSONRedisSortedSet):
             (5, 11.0)
         ])
         self.set.update(data)
-        keys = list(map(self.cast, list(data.keys())))
+        keys = list(map(self.cast, reversed(list(data.keys()))))
         self.assertListEqual(self.set[2:8], keys[2:8])
         self.assertListEqual(self.set[:-1], keys[:-1])
         self.assertListEqual(self.set[-4:-1], keys[-4:-1])

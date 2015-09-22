@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -S
 # -*- coding: utf-8 -*-
 """
-
   `Redis Structures` - Redis data structures wrapped with Python.
+   :build-status:https://travis-ci.org/jaredlunde/redis_structures
 |--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·|
 
    ``Benefits``

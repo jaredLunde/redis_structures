@@ -1,4 +1,4 @@
-# redis_structures
+# redis_structures [![Build Status](https://travis-ci.org/jaredlunde/redis_structures.svg?branch=master)](https://travis-ci.org/jaredlunde/redis_structures)
 Pythonic data structures backed by Redis. Full documentation is coming soon.
 
 * [RedisMap](#redismap) behaves like `dict()`
@@ -14,7 +14,7 @@ Pythonic data structures backed by Redis. Full documentation is coming soon.
 > need iter() methods like keys() you should use RedisHash
 > and not RedisMap. The only advantage to RedisMap is a
 > simple {key: value} get, set interface. The size of the
-> map is unmonitored. 
+> map is unmonitored.
 >
 > Behaves like a Python `dict()` without the
 > `__len__` property.
@@ -30,17 +30,17 @@ print(redis_map)
 # {'hello': 'world2'}
 
 redis_map["hello"] = "world"
-print(redis_map["hello"]) 
+print(redis_map["hello"])
 # world
 
-print(redis_map.get('world', 'hello')) 
+print(redis_map.get('world', 'hello'))
 # hello
 
 len(redis_map)
 # AttributeError: `RedisMap` structures have no len property
 
 redis_map.clear()
-print(redis_map['hello']) 
+print(redis_map['hello'])
 # None
 ```
 
