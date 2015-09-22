@@ -854,6 +854,69 @@ class RedisDefaultDict(RedisDict):
 
 
 class RedisHash(BaseRedisStructure):
+    """ ..
+            from redis_structures import StrictRedis, RedisHash
+
+            rh = RedisHash("practice", client=StrictRedis(), serialize=True)
+            print(rh)
+            '''
+            <redis_structures.RedisHash(
+                name=`practice`,
+                key_prefix=`rs:hash:practice`,
+                serializer=<module 'ujson' from '/home/jared/git/ultrajson/'>,
+                size=0
+            ):0x7f2f8590a178>
+            '''
+            rh.clear()
+
+            rh["hello"] = "world"
+            print(rh["hello"])
+            # world
+
+            print("hello" in rh)
+            # True
+
+            del rh["hello"]
+            print("hello" in rh)
+            # False
+
+            print(rh.get("hello", "jared"))
+            # jared
+
+            print(rh.incr("views", 1))
+            # 1
+            print(rh.incr("views", 1))
+            # 2
+
+            rand = {
+                'GNy': {
+                    '6H7CVnxP7Y': 76855434120142179,
+                    'Yi4tEyeYj': 75451199148498217,
+                    'VkvI8Ju': 58509992008972989},
+                'xsxb44': {
+                    'm3PpVH': 11240718704668602,
+                    'c2q': 51958730109782043,
+                    'K4r8emcD6F': 65783979409080178},
+                'pu': {
+                    'T71nX': 84643776430801067,
+                    'dLbW': 19553787616446251,
+                    'qVCz': 28313945830327169}
+            }
+            rh.update(rand)
+
+            print(rh.all)
+            '''
+            {'views': '2', 'GNy': {'6H7CVnxP7Y': 76855434120142179, 'Yi4tEyeYj':
+            75451199148498217, 'VkvI8Ju': 58509992008972989}, 'xsxb44':
+            {'m3PpVH': 11240718704668602, 'c2q': 51958730109782043,
+            'K4r8emcD6F': 65783979409080178}, 'pu': {'T71nX': 84643776430801067,
+            'dLbW': 19553787616446251, 'qVCz': 28313945830327169}}
+            '''
+
+            print(len(rh))
+            # 4
+        ..
+    """
     __slots__ = (
         "name", "prefix", "serializer", "_client", "_default", "serialized")
 
@@ -1014,12 +1077,78 @@ class RedisHash(BaseRedisStructure):
 
 
 class RedisDefaultHash(RedisHash):
-    """ Memory-persistent key/value-backed dictionaries """
+    """ ..
+            from redis_structures import StrictRedis, RedisDefaultHash
+
+            rh = RedisDefaultHash("practice", client=StrictRedis(), serialize=True)
+            print(rh)
+            '''
+            <redis_structures.RedisDefaultHash(
+                name=`practice`,
+                key_prefix=`rs:hash:practice`,
+                _default={},
+                serializer=<module 'ujson' from '/home/jared/git/ultrajson/'>,
+                size=0
+            ):0x7f2f8590a178>
+            '''
+            rh.clear()
+
+            rh["hello"] = "world"
+            print(rh["hello"])
+            # world
+
+            print("hello" in rh)
+            # True
+
+            del rh["hello"]
+            print("hello" in rh)
+            # False
+
+            print(rh.get("hello", "jared"))
+            # jared
+
+            print(rh.incr("views", 1))
+            # 1
+            print(rh.incr("views", 1))
+            # 2
+
+            rand = {
+                'GNy': {
+                    '6H7CVnxP7Y': 76855434120142179,
+                    'Yi4tEyeYj': 75451199148498217,
+                    'VkvI8Ju': 58509992008972989},
+                'xsxb44': {
+                    'm3PpVH': 11240718704668602,
+                    'c2q': 51958730109782043,
+                    'K4r8emcD6F': 65783979409080178},
+                'pu': {
+                    'T71nX': 84643776430801067,
+                    'dLbW': 19553787616446251,
+                    'qVCz': 28313945830327169}
+            }
+            rh.update(rand)
+
+            print(rh.all)
+            '''
+            {'views': '2', 'GNy': {'6H7CVnxP7Y': 76855434120142179, 'Yi4tEyeYj':
+            75451199148498217, 'VkvI8Ju': 58509992008972989}, 'xsxb44':
+            {'m3PpVH': 11240718704668602, 'c2q': 51958730109782043,
+            'K4r8emcD6F': 65783979409080178}, 'pu': {'T71nX': 84643776430801067,
+            'dLbW': 19553787616446251, 'qVCz': 28313945830327169}}
+            '''
+
+            print(len(rh))
+            # 4
+        ..
+    """
     __slots__ = (
         "name", "prefix", "serializer", "_client", "_default", "serialized")
 
     def __init__(self, name, data=None, default={},
                  prefix="rs:dict", **kwargs):
+        """ :see::meth:RedisHash.__init__
+            @default: default value if a given key doesn't exist
+        """
         super().__init__(name=name, prefix=prefix, **kwargs)
         self._default = default
         self.update(data or {})
