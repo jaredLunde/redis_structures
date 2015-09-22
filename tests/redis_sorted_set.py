@@ -332,7 +332,8 @@ class TestJSONRedisSortedSetReversed(TestJSONRedisSortedSet):
         ])
         self.set.update(data)
         self.assertListEqual(
-            list(self.set.keys()), list(map(self.cast, reversed(data.keys()))))
+            list(self.set.keys()),
+            list(map(self.cast, reversed(list(data.keys())))))
 
     def test_values(self):
         self.reset(0)
@@ -346,7 +347,8 @@ class TestJSONRedisSortedSetReversed(TestJSONRedisSortedSet):
         ])
         self.set.update(data)
         self.assertListEqual(
-            list(self.set.values()), list(reversed(data.values())))
+            list(self.set.values()),
+            list(reversed(list(data.values()))))
 
     def test_slice(self):
         self.reset(0)
@@ -364,7 +366,7 @@ class TestJSONRedisSortedSetReversed(TestJSONRedisSortedSet):
             (5, 11.0)
         ])
         self.set.update(data)
-        keys = list(map(self.cast, reversed(data.keys())))
+        keys = list(map(self.cast, list(data.keys()))))
         self.assertListEqual(self.set[2:8], keys[2:8])
         self.assertListEqual(self.set[:-1], keys[:-1])
         self.assertListEqual(self.set[-4:-1], keys[-4:-1])
