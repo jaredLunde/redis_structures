@@ -13,7 +13,7 @@ import pickle
 import unittest
 from collections import OrderedDict
 
-from vital.debug import RandData, gen_rand_str
+from redis_structures.debug import RandData, gen_rand_str
 from redis_structures import StrictRedis, RedisSortedSet
 
 
@@ -217,21 +217,21 @@ class TestJSONRedisSortedSet(unittest.TestCase):
         self.reset()
         self.set.set_pttl(1000)
         self.assertGreater(self.set.pttl(), 300)
-        time.sleep(1)
+        time.sleep(1.10)
         self.assertEqual(len(self.set), 0)
 
     def test_ttl(self):
         self.reset()
         self.set.set_ttl(1)
         self.assertGreater(self.set.ttl(), 0.30)
-        time.sleep(1)
+        time.sleep(1.10)
         self.assertEqual(len(self.set), 0)
 
     def test_ttl(self):
         self.reset()
         self.set.set_ttl(1)
         self.assertGreater(self.set.ttl(), 0.30)
-        time.sleep(1)
+        time.sleep(1.10)
         self.assertEqual(len(self.set), 0)
 
     def test_expire_at(self):
@@ -249,7 +249,7 @@ class TestJSONRedisSortedSet(unittest.TestCase):
         self.assertGreater(self.set.pttl(), 300)
         time.sleep(2)
         self.assertEqual(len(self.set), 0)
-        
+
 
 class TestPickledRedisSortedSet(TestJSONRedisSortedSet):
     set = RedisSortedSet(

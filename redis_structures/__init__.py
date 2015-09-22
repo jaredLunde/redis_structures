@@ -865,13 +865,6 @@ class RedisHash(BaseRedisStructure):
         """ -> #tuple (hash_name, field name) """
         return (self.key_prefix, key)
 
-    '''ttl = BaseRedisStructure.set_ttl
-    pttl = BaseRedisStructure.set_ttl
-    set_ttl = BaseRedisStructure.set_ttl
-    set_pttl = BaseRedisStructure.set_pttl
-    expire_at = BaseRedisStructure.expire_at
-    setex = BaseRedisStructure.setex'''
-
     @property
     def size(self):
         """ :see::meth:RedisDict.size """

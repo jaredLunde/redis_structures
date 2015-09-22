@@ -12,7 +12,7 @@ import time
 import pickle
 import unittest
 
-from vital.debug import RandData, gen_rand_str
+from redis_structures.debug import RandData, gen_rand_str
 from redis_structures import StrictRedis, RedisSet
 
 
@@ -242,21 +242,21 @@ class TestJSONRedisSet(unittest.TestCase):
         self.reset()
         self.set.set_pttl(1000)
         self.assertGreater(self.set.pttl(), 300)
-        time.sleep(1)
+        time.sleep(1.10)
         self.assertEqual(len(self.set), 0)
 
     def test_ttl(self):
         self.reset()
         self.set.set_ttl(1)
         self.assertGreater(self.set.ttl(), 0.30)
-        time.sleep(1)
+        time.sleep(1.10)
         self.assertEqual(len(self.set), 0)
 
     def test_ttl(self):
         self.reset()
         self.set.set_ttl(1)
         self.assertGreater(self.set.ttl(), 0.30)
-        time.sleep(1)
+        time.sleep(1.10)
         self.assertEqual(len(self.set), 0)
 
     def test_expire_at(self):

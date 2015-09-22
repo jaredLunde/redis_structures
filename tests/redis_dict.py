@@ -12,7 +12,7 @@ import time
 import pickle
 import unittest
 
-from vital.debug import RandData, gen_rand_str
+from redis_structures.debug import RandData, gen_rand_str
 from redis_structures import StrictRedis, RedisDict
 
 
