@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -S
 # -*- coding: utf-8 -*-
 """
-   `Redis set Tests`
+   `Redis Set Tests`
 --·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
    2015 Jared Lunde © The MIT License (MIT)
    http://github.com/jaredlunde
@@ -25,6 +25,8 @@ class TestJSONRedisSet(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.addCleanup(self.set.clear)
+        self.addCleanup(self.set_2.clear)
+        self.addCleanup(self.set_3.clear)
 
     def cast(self, obj):
         return str(obj) if self.is_str else obj

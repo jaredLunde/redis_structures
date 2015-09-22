@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -S
 # -*- coding: utf-8 -*-
 """
-   `Redis Dict Tests`
+   `Redis Hash Tests`
 --·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
    2015 Jared Lunde © The MIT License (MIT)
    http://github.com/jaredlunde

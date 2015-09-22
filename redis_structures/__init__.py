@@ -1805,7 +1805,8 @@ class RedisSortedSet(BaseRedisStructure):
 
     def __contains__(self, member):
         """ :see::RedisSet.__contains__ """
-        return self._client.zcard(self.key_prefix, self._dumps(member))
+        return True if self._client.zscore(
+            self.key_prefix, self._dumps(member)) is not None else False
 
     def __reversed__(self):
         """ :see::RedisList.__reversed__ """
@@ -1822,7 +1823,8 @@ class RedisSortedSet(BaseRedisStructure):
 
     def decr(self, member, by=1):
         """ Decrements @member by @by within the sorted set """
-        return self._client.zdecrby(self.key_prefix, self._dumps(member), by)
+        return self._client.zincrby(
+            self.key_prefix, self._dumps(member), by * -1)
 
     def add(self, *args, **kwargs):
         """ Adds member/value pairs to the sorted set in two ways:
@@ -1847,7 +1849,7 @@ class RedisSortedSet(BaseRedisStructure):
             if args and self.serialized:
                 # args format: value, key, value, key...
                 zargs = [
-                    _dumps(x) if i % 2 == 1 else x
+                    _dumps(x) if (i % 2 == 1 and self.serialized) else x
                     for i, x in enumerate(args)]
             if kwargs:
                 # kwargs format: key=value, key=value
@@ -1860,28 +1862,34 @@ class RedisSortedSet(BaseRedisStructure):
         """ Adds @data to the sorted set
             @data: #dict or dict-like object
         """
-        _dumps = self._dumps
-        zargs = [
-            _dumps(x) if (i % 2 == 1) else x
-            for y in data.items()
-            for i, x in enumerate(reversed(y))
-        ]
-        return self._client.zadd(self.key_prefix, *zargs)
+        if data:
+            _dumps = self._dumps
+            zargs = [
+                _dumps(x) if (i % 2 == 1) else x
+                for y in data.items()
+                for i, x in enumerate(reversed(y))
+            ]
+            return self._client.zadd(self.key_prefix, *zargs)
 
     def remove(self, *members):
         """ Removes @members from the sorted set """
+        members = list(map(self._dumps, members))
         self._client.zrem(self.key_prefix, *members)
 
     def rank(self, member):
         """ Gets the ASC rank of @member from the sorted set, that is,
             lower scores have lower ranks
         """
+        if self.reversed:
+            return self._client.zrevrank(self.key_prefix, self._dumps(member))
         return self._client.zrank(self.key_prefix, self._dumps(member))
 
     def revrank(self, member):
         """ Gets the DESC rank of @member from the sorted set, that is,
             higher scores have lower ranks
         """
+        if self.reversed:
+            return self._client.zrank(self.key_prefix, self._dumps(member))
         return self._client.zrevrank(self.key_prefix, self._dumps(member))
 
     index = rank
@@ -1911,7 +1919,7 @@ class RedisSortedSet(BaseRedisStructure):
            self.key_prefix, start=start, end=stop, withscores=withscores,
            desc=reverse, score_cast_func=self.cast):
             if withscores:
-                yield (_loads(member[0]), member[1])
+                yield (_loads(member[0]), self.cast(member[1]))
             else:
                 yield _loads(member)
 
@@ -1941,7 +1949,7 @@ class RedisSortedSet(BaseRedisStructure):
            self.key_prefix, min=min, max=max, start=start, num=num,
            withscores=withscores, score_cast_func=self.cast):
             if withscores:
-                yield (_loads(member[0]), member[1])
+                yield (_loads(member[0]), self.cast(member[1]))
             else:
                 yield _loads(member)
 
@@ -1978,11 +1986,14 @@ class RedisSortedSet(BaseRedisStructure):
         """
         if self.serialized:
             return map(
-                lambda x: (self._loads(x[0]), x[1]), self._client.zscan_iter(
+                lambda x: (self._loads(x[0]), self.cast(x[1])),
+                self._client.zscan_iter(
                     self.key_prefix, match=match, count=count))
         else:
-            return iter(self._client.zscan_iter(
-                self.key_prefix, match=match, count=count))
+            return map(
+                lambda x: (self._decode(x[0]), self.cast(x[1])),
+                self._client.zscan_iter(
+                    self.key_prefix, match=match, count=count))
 
     keys = iter
 
@@ -1992,7 +2003,7 @@ class RedisSortedSet(BaseRedisStructure):
         """
         reverse = reverse if reverse is not None else self.reversed
         for member, score in self.items(reverse=reverse):
-            yield score
+            yield self.cast(score)
 
     def items(self, reverse=None):
         """ @reverse: #bool True to return revranked scores
@@ -2012,8 +2023,12 @@ class RedisSortedSet(BaseRedisStructure):
     def scan(self, match="*", count=1000, cursor=0):
         """ :see::meth:RedisMap.scan """
         if self.serialized:
-            return map(lambda x: (self._loads(x[0]), x[1]), self._client.zscan(
-                self.key_prefix, cursor=cursor, match=match, count=count))
-        else:
-            return self._client.zscan(
+            cursor, data = self._client.zscan(
                 self.key_prefix, cursor=cursor, match=match, count=count)
+            return (cursor, list(map(
+                lambda x: (self._loads(x[0]), self.cast(x[1])), data)))
+        else:
+            cursor, data = self._client.zscan(
+                self.key_prefix, cursor=cursor, match=match, count=count)
+            return (cursor, list(map(
+                lambda x: (self._decode(x[0]), self.cast(x[1])), data)))

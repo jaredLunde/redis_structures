@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -S
 # -*- coding: utf-8 -*-
 """
-   `Redis set Tests`
+   `Redis Sorted Set Tests`
 --·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
    2015 Jared Lunde © The MIT License (MIT)
    http://github.com/jaredlunde
@@ -11,6 +11,7 @@ import datetime
 import time
 import pickle
 import unittest
+from collections import OrderedDict
 
 from vital.debug import RandData, gen_rand_str
 from redis_structures import StrictRedis, RedisSortedSet
@@ -29,12 +30,10 @@ class TestJSONRedisSortedSet(unittest.TestCase):
 
     def reset(self, count=10, type=int):
         self.set.clear()
-        self.set_2.clear()
-        self.set_3.clear()
-        self.data = RandData(type).set(count)
+        self.data = OrderedDict([
+            (k, v) for k, v in RandData(type).dict(count).items()])
         self.data_count = count
         self.set.update(self.data)
-        self.set_2.update(self.data)
 
     def test_prefix(self):
         self.assertEqual(self.set.prefix, 'rs:unit_tests')
@@ -43,185 +42,107 @@ class TestJSONRedisSortedSet(unittest.TestCase):
 
     def test_add(self):
         self.reset(0)
-        self.set.add("hello")
+        self.set.add(1.0, "hello")
         self.assertIn("hello", self.set)
+        self.assertEqual(self.set['hello'], 1.0)
 
     def test_update(self):
         self.reset(0)
-        data = {"it's", "great", "to", "be", "here"}
+        data = {
+            "hello": 1.0,
+            "world": 2.0}
         self.set.update(data)
-        self.assertSetEqual(self.set.all, data)
+        self.assertDictEqual(dict(self.set.all), data)
 
-    def test_update_with_redis_set(self):
+    def test_count(self):
         self.reset(0)
-        data = {"it's", "great", "to", "be", "here"}
-        self.set_2.update(data)
-        self.set.update(self.set_2)
-        self.assertSetEqual(self.set.all, data)
+        data = {
+            "hello": 1.0,
+            "world": 2.0,
+            "hello2": 10.0,
+            "hello3": 14.0}
+        self.set.update(data)
+        self.assertEqual(self.set.count(8, 10), 1)
+        self.assertEqual(self.set.count(0, 10), 3)
 
-    #: DIFF
-    def test_difference(self):
-        self.reset()
-        data = {"it's", "great", "to", "be", "here"}
-        self.set_2.update(data)
-        self.assertSetEqual(self.set_2.difference(self.set.key_prefix), data)
+    def test_incr_decr(self):
+        self.reset(0)
+        self.set.incr("hello")
+        self.assertEqual(self.set["hello"], 1)
+        self.set.incr("hello", 5)
+        self.assertEqual(self.set["hello"], 6)
+        self.set.decr("hello", 3)
+        self.assertEqual(self.set["hello"], 3)
+        self.set.decr("hello")
+        self.assertEqual(self.set["hello"], 2)
 
-    def test_difference_with_redis_set(self):
+    def test_cast(self):
         self.reset()
-        data = {"it's", "great", "to", "be", "here"}
-        self.set_2.update(data)
-        self.assertSetEqual(self.set_2.difference(self.set), data)
+        self.set.incr("hello")
+        self.assertIsInstance(self.set["hello"], self.set.cast)
+        for x in self.set.values():
+            self.assertIsInstance(x, self.set.cast)
+        for k, x in self.set.itemsbyscore():
+            self.assertIsInstance(x, self.set.cast)
 
-    def test_difference_op_with_redis_set(self):
-        self.reset()
-        data = {"it's", "great", "to", "be", "here"}
-        self.set_2.update(data)
-        self.assertSetEqual(
-            (self.set_2 - self.set),
-            set(map(self.cast, data)))
+    def test_index(self):
+        self.reset(10)
+        self.set.incr("hello")
+        self.assertEqual(self.set.index('hello'), 0)
+        self.set.incr("hello", 99999393933939939393993)
+        self.assertEqual(self.set.index('hello'), 10)
 
-    def test_difference_iter(self):
-        self.reset()
-        data = {"it's", "great", "to", "be", "here"}
-        self.set_2.update(data)
-        self.assertSetEqual(set(self.set_2.diffiter(self.set.key_prefix)), data)
+    def test_keys(self):
+        self.reset(0)
+        data = OrderedDict([
+            ('hello', 1.0),
+            ('world', 2.0),
+            ('hello2', 3.0),
+            ('world2', 4.0),
+            ('hello3', 5.0),
+            ('world3', 6.0),
+        ])
+        self.set.update(data)
+        self.assertListEqual(
+            list(self.set.keys()), list(map(self.cast, data.keys())))
 
-    def test_difference_iter_with_redis_set(self):
-        self.reset()
-        data = {"it's", "great", "to", "be", "here"}
-        self.set_2.update(data)
-        self.assertSetEqual(set(self.set_2.diffiter(self.set)), data)
+    def test_values(self):
+        self.reset(0)
+        data = OrderedDict([
+            ('hello', 1.0),
+            ('world', 2.0),
+            ('hello2', 3.0),
+            ('world2', 4.0),
+            ('hello3', 5.0),
+            ('world3', 6.0),
+        ])
+        self.set.update(data)
+        self.assertListEqual(
+            list(self.set.values()), list(data.values()))
 
-    def test_difference_store(self):
-        self.reset()
-        data = {"it's", "great", "to", "be", "here"}
-        self.set_2.update(data)
-        self.set_2.diffstore(
-            self.set_3, self.set.key_prefix)
-        self.assertSetEqual(self.set_3.all, data)
-
-    def test_difference_store_with_redis_set(self):
-        self.reset()
-        data = {"it's", "great", "to", "be", "here"}
-        self.set_2.update(data)
-        self.set_2.diffstore(self.set_3, self.set)
-        self.assertSetEqual(self.set_3.all, data)
-
-    #: INTER
-    def test_intersection(self):
-        self.reset()
-        self.assertSetEqual(
-            self.set_2.intersection(self.set.key_prefix),
-            set(map(self.cast, self.data)))
-
-    def test_intersection_op_with_redis_set(self):
-        self.reset()
-        self.assertSetEqual(
-            (self.set_2 & self.set),
-            set(map(self.cast, self.data)))
-
-    def test_intersection_with_redis_set(self):
-        self.reset()
-        self.assertSetEqual(
-            self.set_2.intersection(self.set),
-            set(map(self.cast, self.data)))
-
-    def test_intersection_iter(self):
-        self.reset()
-        self.assertSetEqual(set(
-            self.set_2.interiter(self.set.key_prefix)),
-            set(map(self.cast, self.data)))
-
-    def test_intersection_iter_with_redis_set(self):
-        self.reset()
-        self.assertSetEqual(
-            set(self.set_2.interiter(self.set)),
-            set(map(self.cast, self.data)))
-
-    def test_intersection_store(self):
-        self.reset()
-        self.set_2.interstore(self.set_3, self.set.key_prefix)
-        self.assertSetEqual(
-            self.set_3.all,
-            set(map(self.cast, self.data)))
-
-    def test_intersection_store_with_redis_set(self):
-        self.reset()
-        self.set_2.interstore(self.set_3, self.set)
-        self.assertSetEqual(
-            self.set_3.all,
-            set(map(self.cast, self.data)))
-
-    #: UNION
-    def test_union(self):
-        self.reset()
-        self.set.update({"hello", "world"})
-        self.assertSetEqual(
-            self.set_2.union(self.set.key_prefix),
-            self.set.all)
-
-    def test_union_with_redis_set(self):
-        self.reset()
-        self.set.update({"hello", "world"})
-        self.assertSetEqual(
-            self.set_2.union(self.set),
-            self.set.all)
-
-    def test_union_op_with_redis_set(self):
-        self.reset()
-        self.set.update({"hello", "world"})
-        self.assertSetEqual(
-            (self.set_2 | self.set),
-            self.set.all)
-
-    def test_union_iter(self):
-        self.reset()
-        self.set.update({"hello", "world"})
-        self.assertSetEqual(
-            set(self.set_2.unioniter(self.set.key_prefix)),
-            self.set.all)
-
-    def test_union_iter_with_redis_set(self):
-        self.reset()
-        self.set.update({"hello", "world"})
-        self.assertSetEqual(
-            set(self.set_2.unioniter(self.set)),
-            self.set.all)
-
-    def test_union_store(self):
-        self.reset()
-        self.set.update({"hello", "world"})
-        self.set_2.unionstore(self.set_3, self.set.key_prefix)
-        self.assertSetEqual(
-            self.set_3.all,
-            self.set.all)
-
-    def test_union_store_with_redis_set(self):
-        self.reset()
-        self.set.update({"hello", "world"})
-        self.set_2.unionstore(self.set_3, self.set)
-        self.assertSetEqual(
-            self.set_3.all,
-            self.set.all)
-
-    def test_move(self):
-        self.reset()
-        self.set.add("hello")
-        self.assertIn("hello", self.set)
-        self.set.move("hello", self.set_2)
-        self.assertNotIn("hello", self.set)
-        self.assertIn("hello", self.set_2)
-
-    def test_pop(self):
-        self.reset()
-        self.assertIsNotNone(self.set.pop())
-
-    def test_remove(self):
-        self.reset()
-        self.set.add("hello")
-        self.assertIn("hello", self.set)
-        self.set.remove("hello")
-        self.assertNotIn("hello", self.set)
+    def test_slice(self):
+        self.reset(0)
+        data = OrderedDict([
+            ('hello', 1.0),
+            ('world', 2.0),
+            ('hello2', 3.0),
+            ('world2', 4.0),
+            ('hello3', 5.0),
+            ('world3', 6.0),
+            ('hello4', 7.0),
+            ('world4', 8.0),
+            ('hello5', 9.0),
+            ('world5', 10.0),
+            (5, 11.0)
+        ])
+        self.set.update(data)
+        keys = list(map(self.cast, data.keys()))
+        self.assertListEqual(self.set[2:8], keys[2:8])
+        self.assertListEqual(self.set[:-1], keys[:-1])
+        self.assertListEqual(self.set[-4:-1], keys[-4:-1])
+        self.assertEqual(self.set['hello2'], data['hello2'])
+        self.assertEqual(self.set['world4'], data['world4'])
+        self.assertEqual(self.set[5], data[5])
 
     def test_scan(self):
         self.reset()
@@ -230,9 +151,67 @@ class TestJSONRedisSortedSet(unittest.TestCase):
         while cursor:
             cursor, keys = self.set.scan(count=1, cursor=int(cursor))
             if keys:
-                new_keys.extend(keys)
-        self.assertSetEqual(
-            set(map(self.cast, self.data)), set(new_keys))
+                for key, val in keys:
+                    self.assertIn(key, self.data)
+                    self.assertIsInstance(val, self.set.cast)
+
+    def test_iterscan(self):
+        self.reset()
+        new_keys = []
+        for key, val in self.set.iterscan():
+            self.assertIn(key, self.data)
+            self.assertIsInstance(val, self.set.cast)
+
+    def test_iterbyscore(self):
+        self.reset()
+        new_keys = []
+        for key in self.set.iterbyscore():
+            self.assertIn(key, self.data)
+
+    def test_itemsbyscore(self):
+        self.reset()
+        new_keys = []
+        for key, val in self.set.itemsbyscore():
+            self.assertIn(key, self.data)
+            self.assertIsInstance(val, self.set.cast)
+
+    def test_getsetdel(self):
+        self.reset(0)
+        self.set['hello'] = 1.0
+        self.assertIn('hello', self.set)
+        self.assertEqual(self.set['hello'], self.set.cast(1.0))
+        del self.set['hello']
+        self.assertNotIn('hello', self.set)
+
+    def test_remove(self):
+        self.reset(0)
+        self.set['hello'] = 1.0
+        self.assertIn('hello', self.set)
+        self.set.remove('hello')
+        self.assertNotIn('hello', self.set)
+
+    def test_len(self):
+        self.reset()
+        self.assertEqual(len(self.set), len(self.data))
+
+    def test_rank(self):
+        self.reset(0)
+        data = OrderedDict([
+            ('hello', 1.0),
+            ('world', 2.0),
+            ('hello2', 3.0),
+            ('world2', 4.0),
+            ('hello3', 5.0),
+            ('world3', 6.0),
+            ('hello4', 7.0),
+            ('world4', 8.0),
+            ('hello5', 9.0),
+            ('world5', 10.0),
+            (5, 11.0)
+        ])
+        self.set.update(data)
+        self.assertEqual(self.set.rank('hello2'), 2)
+        self.assertEqual(self.set.revrank('hello4'), 4)
 
     def test_pttl(self):
         self.reset()
@@ -270,10 +249,11 @@ class TestJSONRedisSortedSet(unittest.TestCase):
         self.assertGreater(self.set.pttl(), 300)
         time.sleep(2)
         self.assertEqual(len(self.set), 0)
-
+        
 
 class TestPickledRedisSortedSet(TestJSONRedisSortedSet):
-    set = RedisSortedSet("pickled_sset", prefix="rs:unit_tests:", serializer=pickle)
+    set = RedisSortedSet(
+        "pickled_sset", prefix="rs:unit_tests:", serializer=pickle)
 
     def test_prefix(self):
         self.assertEqual(self.set.prefix, 'rs:unit_tests')
@@ -283,6 +263,149 @@ class TestPickledRedisSortedSet(TestJSONRedisSortedSet):
 
 class TestUnserializedRedisSortedSet(TestJSONRedisSortedSet):
     set = RedisSortedSet("unserialized_sset", prefix="rs:unit_tests:")
+    is_str = True
+
+    def test_prefix(self):
+        self.assertEqual(self.set.prefix, 'rs:unit_tests')
+        self.assertEqual(self.set.name, 'unserialized_sset')
+        self.assertEqual(
+            self.set.key_prefix, 'rs:unit_tests:unserialized_sset')
+
+
+class TestJSONRedisSortedSetInt(TestJSONRedisSortedSet):
+    set = RedisSortedSet(
+        "json_sset", cast=int, prefix="rs:unit_tests:", serializer=pickle)
+
+    def test_prefix(self):
+        self.assertEqual(self.set.prefix, 'rs:unit_tests')
+        self.assertEqual(self.set.name, 'json_sset')
+        self.assertEqual(self.set.key_prefix, 'rs:unit_tests:json_sset')
+
+
+class TestPickledRedisSortedSetInt(TestJSONRedisSortedSet):
+    set = RedisSortedSet(
+        "pickled_sset", cast=int, prefix="rs:unit_tests:", serializer=pickle)
+
+    def test_prefix(self):
+        self.assertEqual(self.set.prefix, 'rs:unit_tests')
+        self.assertEqual(self.set.name, 'pickled_sset')
+        self.assertEqual(self.set.key_prefix, 'rs:unit_tests:pickled_sset')
+
+
+class TestUnserializedRedisSortedSetInt(TestJSONRedisSortedSet):
+    set = RedisSortedSet(
+        "unserialized_sset", cast=int, prefix="rs:unit_tests:")
+    is_str = True
+
+    def test_prefix(self):
+        self.assertEqual(self.set.prefix, 'rs:unit_tests')
+        self.assertEqual(self.set.name, 'unserialized_sset')
+        self.assertEqual(
+            self.set.key_prefix, 'rs:unit_tests:unserialized_sset')
+
+
+class TestJSONRedisSortedSetReversed(TestJSONRedisSortedSet):
+    set = RedisSortedSet(
+        "json_sset", reversed=True, prefix="rs:unit_tests:", serializer=pickle)
+
+    def test_prefix(self):
+        self.assertEqual(self.set.prefix, 'rs:unit_tests')
+        self.assertEqual(self.set.name, 'json_sset')
+        self.assertEqual(self.set.key_prefix, 'rs:unit_tests:json_sset')
+
+    def test_index(self):
+        self.reset(10)
+        self.set.incr("hello")
+        self.assertEqual(self.set.index('hello'), 10)
+        self.set.incr("hello", 99999393933939939393993)
+        self.assertEqual(self.set.index('hello'), 0)
+
+    def test_keys(self):
+        self.reset(0)
+        data = OrderedDict([
+            ('hello', 1.0),
+            ('world', 2.0),
+            ('hello2', 3.0),
+            ('world2', 4.0),
+            ('hello3', 5.0),
+            ('world3', 6.0),
+        ])
+        self.set.update(data)
+        self.assertListEqual(
+            list(self.set.keys()), list(map(self.cast, reversed(data.keys()))))
+
+    def test_values(self):
+        self.reset(0)
+        data = OrderedDict([
+            ('hello', 1.0),
+            ('world', 2.0),
+            ('hello2', 3.0),
+            ('world2', 4.0),
+            ('hello3', 5.0),
+            ('world3', 6.0),
+        ])
+        self.set.update(data)
+        self.assertListEqual(
+            list(self.set.values()), list(reversed(data.values())))
+
+    def test_slice(self):
+        self.reset(0)
+        data = OrderedDict([
+            ('hello', 1.0),
+            ('world', 2.0),
+            ('hello2', 3.0),
+            ('world2', 4.0),
+            ('hello3', 5.0),
+            ('world3', 6.0),
+            ('hello4', 7.0),
+            ('world4', 8.0),
+            ('hello5', 9.0),
+            ('world5', 10.0),
+            (5, 11.0)
+        ])
+        self.set.update(data)
+        keys = list(map(self.cast, reversed(data.keys())))
+        self.assertListEqual(self.set[2:8], keys[2:8])
+        self.assertListEqual(self.set[:-1], keys[:-1])
+        self.assertListEqual(self.set[-4:-1], keys[-4:-1])
+        self.assertEqual(self.set['hello2'], data['hello2'])
+        self.assertEqual(self.set['world4'], data['world4'])
+        self.assertEqual(self.set[5], data[5])
+
+    def test_rank(self):
+        self.reset(0)
+        data = OrderedDict([
+            ('hello', 1.0),
+            ('world', 2.0),
+            ('hello2', 3.0),
+            ('world2', 4.0),
+            ('hello3', 5.0),
+            ('world3', 6.0),
+            ('hello4', 7.0),
+            ('world4', 8.0),
+            ('hello5', 9.0),
+            ('world5', 10.0),
+            (5, 11.0)
+        ])
+        self.set.update(data)
+        self.assertEqual(self.set.rank('hello2'), 8)
+        self.assertEqual(self.set.revrank('hello4'), 6)
+
+
+class TestPickledRedisSortedSetReversed(TestJSONRedisSortedSetReversed):
+    set = RedisSortedSet(
+        "pickled_sset", reversed=True, prefix="rs:unit_tests:",
+        serializer=pickle)
+
+    def test_prefix(self):
+        self.assertEqual(self.set.prefix, 'rs:unit_tests')
+        self.assertEqual(self.set.name, 'pickled_sset')
+        self.assertEqual(self.set.key_prefix, 'rs:unit_tests:pickled_sset')
+
+
+class TestUnserializedRedisSortedSetReversed(TestJSONRedisSortedSetReversed):
+    set = RedisSortedSet(
+        "unserialized_sset", reversed=True, prefix="rs:unit_tests:")
     is_str = True
 
     def test_prefix(self):
