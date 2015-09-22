@@ -211,7 +211,14 @@ class BaseRedisStructure(object):
         if string is not None:
             try:
                 return self.serializer.loads(string)
+            except TypeError:
+                #: catches bytes errors with the builtin json library
+                return self.serializer.loads(self._decode(string))
             except pickle.UnpicklingError as e:
+                #: incr and decr methods create issues when pickle serialized
+                #  It's a terrible idea for a serialized instance
+                #  to be performing incr and decr methods, but I think
+                #  it makes sense to catch the error regardless
                 decoded = self._decode(string)
                 if decoded.isdigit():
                     return decoded
