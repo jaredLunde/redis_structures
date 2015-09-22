@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 
-  `Console color references`
+  `Shell colors`
 --·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
-   2015 Jared Lunde © The MIT License (MIT)
+  2014 Jared Lunde © The MIT License (MIT)
+  http://github.com/jaredlunde
 
 """
 # Standard colors
