@@ -12,7 +12,7 @@ install_reqs = parse_requirements(
 
 setup(
     name='redis_structures',
-    version='0.0.1a1',
+    version='0.0.2',
     description='Redis data structures wrapped with Python 3.',
     author='Jared Lunde',
     author_email='jared.lunde@gmail.com',

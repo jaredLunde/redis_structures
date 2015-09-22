@@ -2,9 +2,52 @@
 # -*- coding: utf-8 -*-
 """
 
-  `Redis Structures`
-   Redis data structures wrapped with Python
---·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
+  `Redis Structures` - Redis data structures wrapped with Python.
+|--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·|
+
+   ``Benefits``
+   * |Auto-serialization| (using the serializer of your choice)
+   * |Auto response decoding| (using the encoding of your choice)
+   * |Namespace maintanability| via prefix and name class properties
+   * |Pythonic interface| provides nearly all of the same methods available to
+     builtin Python structures, so there is a minimal learning curve
+   * |Persistent| dictionaries, lists and sets which perhaps won't fit in the
+     local memory, or that you merely wish to save
+
+   ``Table of contents``
+   * ``:class:RedisMap`` behaves similarly to #dict and is a wrapper for
+     simple GET/SET Redis operations
+   * ``:class:RedisDict`` behaves similarly to #dict and is a wrapper for
+     simple GET/SET Redis operations
+   * ``:class:RedisDefaultDict`` behaves similarly to
+     :class:collections.defaultdict and is a wrapper for simple GET/SET
+     Redis operations
+   * ``:class:RedisHash`` behaves similarly to #dict and is a wrapper for
+     Redis HASH operations
+   * ``:class:RedisDefaultHash`` behaves similarly to
+     :class:collections.defaultdict and is a wrapper for Redis HASH operations
+   * ``:class:RedisSet`` behaves similarly to #set and is a wrapper for Redis
+     SET operations
+   * ``:class:RedisList`` behaves nearly identitical to #list and is a
+     wrapper for Redis LIST operations
+   * ``:class:RedisSortedSet`` behaves like a #list and #dict hybrid and is a
+     wrapper for Redis Sorted Set operations
+
+   ``Installation``
+   * |pip install redis_structures|
+   * |git clone https://github.com/jaredlunde/redis_structures.git|
+     |pip install -e ./redis_structures|
+
+   ``Package Requirements``
+   * |redis-py| https://github.com/andymccurdy/redis-py
+
+   ``System Requirements``
+   * |Python 3.3+|
+
+   ``Unit tests available``
+   https://github.com/jaredlunde/redis_structures/tree/master/tests
+
+|--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·|
    2015 Jared Lunde © The MIT License (MIT)
    http://github.com/jaredlunde/redis_structures
 
@@ -14,9 +57,10 @@ try:
 except:
     import json
 
-from random import randint
+import pickle
 import hashlib
 import functools
+from random import randint
 from collections import UserDict, OrderedDict, UserList
 
 from redis import StrictRedis, Redis
@@ -164,10 +208,14 @@ class BaseRedisStructure(object):
         """
         if not self.serialized:
             return self._decode(string)
-        try:
-            return self.serializer.loads(string)
-        except Exception as e:
-            return self._decode(string)
+        if string is not None:
+            try:
+                return self.serializer.loads(string)
+            except pickle.UnpicklingError as e:
+                decoded = self._decode(string)
+                if decoded.isdigit():
+                    return decoded
+                raise pickle.UnpicklingError(e)
 
     def _dumps(self, obj):
         """ If :prop:serialized is True, @obj will be serialized
@@ -261,8 +309,7 @@ class RedisMap(BaseRedisStructure):
         self.update(data or {})
 
     @prepr(
-        ('name', 'cyan'), 'key_prefix', 'serializer', _break=True,
-        _pretty=True)
+        ('name', 'cyan'), 'key_prefix', 'serializer')
     def __repr__(self): return
 
     def __setitem__(self, key, value):
@@ -573,7 +620,7 @@ class RedisDict(RedisMap):
 
     @prepr(
         ('name', 'cyan'), 'key_prefix', '_bucket_key', 'serializer',
-        ('size', 'purple'), _break=True, _pretty=True)
+        ('size', 'purple'))
     def __repr__(self): return
 
     def __str__(self):
@@ -779,7 +826,7 @@ class RedisDefaultDict(RedisDict):
 
     @prepr(
         ('name', 'cyan'), 'key_prefix', '_bucket_key', '_default',
-        'serializer', ('size', 'purple'), _break=True, _pretty=True)
+        'serializer', ('size', 'purple'))
     def __repr__(self): return
 
     def __getitem__(self, key):
@@ -824,8 +871,7 @@ class RedisHash(BaseRedisStructure):
         self.update(data or {})
 
     @prepr(
-        ('name', 'cyan'), 'key_prefix', 'serializer', ('size', 'purple'),
-        _break=True, _pretty=True)
+        ('name', 'cyan'), 'key_prefix', 'serializer', ('size', 'purple'))
     def __repr__(self): return
 
     def __str__(self):
@@ -1063,8 +1109,7 @@ class RedisList(BaseRedisStructure):
         self.extend(data or [])
 
     @prepr(
-        ('name', 'cyan'), 'key_prefix', 'serializer', ('size', 'purple'),
-        _break=True, _pretty=True)
+        ('name', 'cyan'), 'key_prefix', 'serializer', ('size', 'purple'))
     def __repr__(self): return
 
     def __str__(self):
@@ -1403,8 +1448,7 @@ class RedisSet(BaseRedisStructure):
         self.update(data or set())
 
     @prepr(
-        ('name', 'cyan'), 'key_prefix', 'serializer', ('size', 'purple'),
-        _break=True, _pretty=True)
+        ('name', 'cyan'), 'key_prefix', 'serializer', ('size', 'purple'))
     def __repr__(self): return
 
     def __str__(self):
@@ -1759,8 +1803,7 @@ class RedisSortedSet(BaseRedisStructure):
 
     @prepr(
         ('name', 'cyan'), 'key_prefix', 'serializer',
-        ('size', 'purple'), 'cast', 'reversed',
-        _break=True, _pretty=True)
+        ('size', 'purple'), 'cast', 'reversed')
     def __repr__(self): return
 
     def __str__(self):
