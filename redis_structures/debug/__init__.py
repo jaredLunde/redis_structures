@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 
-  `Debugging Tools` - simple tools to debug and time your
-    scripts & structures
+  `Debugging Tools`
+  ```simple tools to debug and time your scripts & structures```
 --·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
   2014 Jared Lunde © The MIT License (MIT)
   http://github.com/jaredlunde

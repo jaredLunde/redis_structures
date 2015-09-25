@@ -1,13 +1,16 @@
 #!/usr/bin/python3 -S
 # -*- coding: utf-8 -*-
 """
-  `Redis Structures` - Redis data structures wrapped with Python.
+
+  `Redis Structures`
+
    :build-status:https://travis-ci.org/jaredlunde/redis_structures
-|--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·|
+--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
+   ```Redis data structures wrapped with Python.```
 
    ``Benefits``
-   * |Auto-serialization| (using the serializer of your choice)
-   * |Auto response decoding| (using the encoding of your choice)
+   * |Auto-serialization| using the serializer of your choice
+   * |Auto response decoding| using the encoding of your choice
    * |Namespace maintanability| via prefix and name class properties
    * |Pythonic interface| provides nearly all of the same methods available to
      builtin Python structures, so there is a minimal learning curve
@@ -34,9 +37,10 @@
      wrapper for Redis Sorted Set operations
 
    ``Installation``
-   * |pip install redis_structures|
-   * |git clone https://github.com/jaredlunde/redis_structures.git|
-     |pip install -e ./redis_structures|
+   - |pip install redis_structures|
+   ```or```
+   - |git clone https://github.com/jaredlunde/redis_structures.git|
+     |python ./redis_structures/setup.py install|
 
    ``Package Requirements``
    * |redis-py| https://github.com/andymccurdy/redis-py
@@ -45,9 +49,9 @@
    * |Python 3.3+|
 
    ``Unit tests available``
-   https://github.com/jaredlunde/redis_structures/tree/master/tests
+   * https://github.com/jaredlunde/redis_structures/tree/master/tests
 
-|--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·|
+--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
    2015 Jared Lunde © The MIT License (MIT)
    http://github.com/jaredlunde/redis_structures
 
@@ -69,7 +73,7 @@ from redis_structures.debug import *
 
 __all__ = (
     'Redis',
-    'StrictRedis'
+    'StrictRedis',
     'BaseRedisStructure',
     'RedisMap',
     'RedisDict',
