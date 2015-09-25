@@ -5,21 +5,22 @@ try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
-from pip.req import parse_requirements
+
+
+_dir = os.path.dirname(os.path.realpath(__file__))
+
 
 def readme():
-    with open('README.rst') as f:
+    with open(_dir + '/README.rst') as f:
         return f.read()
 
 # parse_requirements() returns generator of pip.req.InstallRequirement objects
-install_reqs = parse_requirements(
-    os.path.dirname(os.path.realpath(__file__)) +
-    "/requirements.txt",
-    session=uuid.uuid1())
+with open(_dir + '/requirements.txt') as f:
+    required = f.read().splitlines()
 
 setup(
     name='redis_structures',
-    version='0.1.1',
+    version='0.1.2',
     license='MIT',
     description='Redis data structures wrapped with Python 3.',
     long_description=readme(),
@@ -36,5 +37,5 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     keywords=["redis", "data structures"],
-    install_requires=[str(ir.req) for ir in install_reqs],
+    install_requires=required,
     packages=['redis_structures', 'redis_structures.debug'])
