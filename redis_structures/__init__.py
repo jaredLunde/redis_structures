@@ -71,6 +71,12 @@ from redis import StrictRedis, Redis
 from redis_structures.debug import *
 
 
+__version__ = "0.1.2"
+__encoding__ = "utf8"
+__license__ = 'MIT'
+__author__ = "Jared Lunde"
+
+
 __all__ = (
     'Redis',
     'StrictRedis',
@@ -238,7 +244,7 @@ class BaseRedisStructure(object):
 
 
 class RedisMap(BaseRedisStructure):
-    """ ``RedisMap behaves like a python #dict, without a __len__ property``
+    """ ``RedisMap behaves like a python #dict, without a |__len__| method``
         ..
             import pickle
             from redis_structures import StrictRedis, RedisMap
@@ -374,12 +380,12 @@ class RedisMap(BaseRedisStructure):
         return self._client.setex(
             self.get_key(key), ttl, self._dumps(value))
 
-    def psetex(self, key, value, pttl=0):
+    def psetex(self, key, value, ttl=0):
         """ @ttl: time to live in milliseconds
             :see::meth:__setitem__
         """
         return self._client.psetex(
-            self.get_key(key), pttl, self._dumps(value))
+            self.get_key(key), ttl, self._dumps(value))
 
     def incr(self, key, by=1):
         """ Increments @key by @by
@@ -970,7 +976,7 @@ class RedisHash(BaseRedisStructure):
         return self._client.hdel(self.key_prefix, field)
 
     def __len__(self):
-        """ :see::meth:RedisMap.__len__ """
+        """ :see::meth:RedisDict.__len__ """
         return self.size
 
     def __contains__(self, field):

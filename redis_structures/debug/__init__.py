@@ -3,7 +3,7 @@
 """
 
   `Debugging Tools`
-  ```simple tools to debug and time your scripts & structures```
+  ```Simple tools to debug and time your scripts & structures```
 --·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
   2014 Jared Lunde © The MIT License (MIT)
   http://github.com/jaredlunde
@@ -22,6 +22,7 @@ import inspect
 import importlib
 try:
     import numpy as np
+    np.random = random.SystemRandom()
 except ImportError:
     try:
         import statistics as np
@@ -47,11 +48,11 @@ from codecs import getencoder
 from functools import wraps
 from collections import *
 
+from redis_structures.tools.encoding import stdout_encode
 from redis_structures.debug import colors, tlds
 
 
 __all__ = (
-  "stdout_encode",
   "get_terminal_width",
   "line",
   "flag",
@@ -78,19 +79,6 @@ __all__ = (
 )
 
 
-def stdout_encode(u, default='utf-8'):
-    """ Encodes a given string with the proper standard out encoding
-        If sys.stdout.encoding isn't specified, it this defaults to @default
-
-        @default: default encoding
-
-        -> #str with standard out encoding
-    """
-    # from http://stackoverflow.com/questions/3627793/best-output-type-and-encoding-practices-for-repr-functions
-    encoding = sys.stdout.encoding or default
-    return u.encode(encoding, "replace").decode(encoding, "replace")
-
-
 def get_terminal_width():
     """ -> #int width of the terminal window """
     # http://www.brandonrubin.me/2014/03/18/python-snippet-get-terminal-width/
@@ -113,12 +101,12 @@ def line(separator="-·-", color=None, padding=None, num=1):
     """ Prints a line separator the full width of the terminal.
 
         @separator: the #str chars to create the line from
-        @color: line color from :mod:vital.debug.colors
+        @color: line color from :mod:redis_structures.debug.colors
         @padding: adds extra lines to either the top, bottom or both
             of the line via :func:padd
         @num: #int number of lines to print
         ..
-            from vital.debug import line
+            from redis_structures.debug import line
             line("__")
             ____________________________________________________________________
         ..
@@ -140,7 +128,7 @@ def padd(text, padding="top", size=1):
 
         -> #str padded @text
         ..
-            from vital.debug import *
+            from redis_structures.debug import *
 
             padd("Hello world")
             # -> '\\nHello world'
@@ -171,7 +159,7 @@ def colorize(text, color="BLUE", close=True):
 
         -> #str colorized @text
         ..
-            from vital.debug import colorize
+            from redis_structures.debug import colorize
 
             colorize("Hello world", "blue")
             # -> '\x1b[0;34mHello world\x1b[1;m'
@@ -194,7 +182,7 @@ def uncolorize(text):
 
         -> #str uncolorized @text
         ..
-            from vital.debug import uncolorize
+            from redis_structures.debug import uncolorize
 
             uncolorize('\x1b[0;34mHello world\x1b[1;m')
             # -> 'Hello world'
@@ -211,7 +199,7 @@ def bold(text, close=True):
 
         -> #str bolded @text
         ..
-            from vital.debug import bold
+            from redis_structures.debug import bold
 
             bold("Hello world")
             # -> '\x1b[1mHello world\x1b[1;m'
@@ -231,7 +219,7 @@ def cut(text, length=50, replace_with="…"):
         @length: #int max length of string
         @replace_with: #str to replace chars beyond @length with
         ..
-            from vital.debug import cut
+            from redis_structures.debug import cut
 
             cut("Hello world", 8)
             # -> 'Hello w…'
@@ -279,7 +267,7 @@ def flag(text=None, color=None, padding=None, show=True):
 
         -> #str (flagged) text
         ..
-            from vital.debug import flag
+            from redis_structures.debug import flag
 
             flag("Hello world", "blue")
             # -> (Hello world)
@@ -314,7 +302,7 @@ def table_mapping(data, padding=1, separator=" "):
 
         -> #str pretty one dimensional table
         ..
-            from vital.debug import table_mapping
+            from redis_structures.debug import table_mapping
 
             print(table_mapping({"key1": "val1", "key2": "val2"}))
             # -> \x1b[1m  key1\x1b[1;m val1
@@ -346,7 +334,7 @@ def gen_rand_str(*size, use=None, keyspace=None):
         @use: the random module to use
         @keyspace: #str chars allowed in the random string
         ..
-            from vital.debug import gen_rand_str
+            from redis_structures.debug import gen_rand_str
 
             gen_rand_str()
             # -> 'PRCpAq'
@@ -379,7 +367,7 @@ def rand_readable(*size, use=None, density=6):
         @density: how often to include a vowel, you can expect a vowel about
             once every (density) nth character
         ..
-            from vital.debug import rand_readable
+            from redis_structures.debug import rand_readable
 
             rand_readable()
             # -> 'hyiaqk'
@@ -419,12 +407,12 @@ def get_parent_name(obj):
 
         -> #str parent object name or None
         ..
-            from vital.debug import get_parent_name
+            from redis_structures.debug import get_parent_name
 
             get_parent_name(get_parent_name)
-            # -> 'vital.debug'
+            # -> 'redis_structures.debug'
 
-            get_parent_name(vital.debug)
+            get_parent_name(redis_structures.debug)
             # -> 'vital'
 
             get_parent_name(str)
@@ -473,10 +461,10 @@ def get_parent_obj(obj):
 
         -> #str parent object name or None
         ..
-            from vital.debug import get_parent_obj
+            from redis_structures.debug import get_parent_obj
 
             get_parent_obj(get_parent_obj)
-            # -> <module 'vital.debug' from>
+            # -> <module 'redis_structures.debug' from>
         ..
     """
     try:
@@ -520,12 +508,12 @@ def get_obj_name(obj, full=True):
 
         -> #str object name
         ..
-            from vital.debug import get_parent_obj
+            from redis_structures.debug import get_parent_obj
 
             get_obj_name(get_obj_name)
             # -> 'get_obj_name'
 
-            get_obj_name(vital.debug.Timer)
+            get_obj_name(redis_structures.debug.Timer)
             # -> 'Timer'
         ..
     """
@@ -555,16 +543,16 @@ def format_obj_name(obj, delim="<>"):
 
         -> #str formatted name
         ..
-            from vital.debug import format_obj_name
+            from redis_structures.debug import format_obj_name
 
-            format_obj_name(vital.debug.Timer)
-            # -> 'Timer<vital.debug>'
+            format_obj_name(redis_structures.debug.Timer)
+            # -> 'Timer<redis_structures.debug>'
 
-            format_obj_name(vital.debug)
+            format_obj_name(redis_structures.debug)
             # -> 'debug<vital>'
 
-            format_obj_name(vital.debug.Timer.time)
-            # -> 'time<vital.debug.Timer>'
+            format_obj_name(redis_structures.debug.Timer.time)
+            # -> 'time<redis_structures.debug.Timer>'
         ..
     """
     pname = ""
@@ -689,7 +677,7 @@ class prepr(UserString):
 
 class RandData(object):
     """ ..
-            from vital.debug import RandData
+            from redis_structures.debug import RandData
 
             rd = RandData(str)
 
@@ -999,7 +987,7 @@ class RandData(object):
             -> random @struct
             ..
                 from collections import UserList
-                from vital.debug import RandData
+                from redis_structures.debug import RandData
 
                 class MySequence(UserList):
                     pass
@@ -1036,7 +1024,7 @@ class RandData(object):
             -> random @struct
             ..
                 from collections import UserDict
-                from vital.debug import RandData
+                from redis_structures.debug import RandData
 
                 class MyDict(UserDict):
                     pass
@@ -1066,7 +1054,7 @@ class RandData(object):
 
 class Look(object):
     """ ..
-            from vital.debug import Look
+            from redis_structures.debug import Look
 
             _dict = RandData(RandData.hashType).dict(3, 1)
             look = Look(_dict)
@@ -1327,7 +1315,7 @@ class Look(object):
 
             -> #str pretty object name
             ..
-                from vital.debug import Look
+                from redis_structures.debug import Look
                 print(Look.pretty_objname(dict))
                 # -> 'dict\x1b[1;36m<builtins>\x1b[1;m'
             ..
@@ -1347,7 +1335,7 @@ class Look(object):
 
 class Logg(object):
     """ ..
-            from vital.debug import logg
+            from redis_structures.debug import logg
 
             logg.warning()
             # (Warning)
@@ -1423,21 +1411,21 @@ class Logg(object):
             @pretty: #bool whether or not to format @messages with :class:Look
 
             ``Log levels``
-                |v| Verbose, prints all messages
-                |l| Log, prints all log, notice, warning, error, timing and
+            - |v| Verbose, prints all messages
+            - |l| Log, prints all log, notice, warning, error, timing and
                     count type messages
-                |n| Notice, prints all notice, warning, and error type messages
-                |w| Warning, prints all warning and error type messages
-                |d| Diagnostic, prints all timing and count type messages
-                |e| Error, prints all error type messages
-                |s| Success, prints all success and complete type messages
-                |t| Timing, prints all timing type messages
-                |c| Count, prints all count type messages
+            - |n| Notice, prints all notice, warning, and error type messages
+            - |w| Warning, prints all warning and error type messages
+            - |d| Diagnostic, prints all timing and count type messages
+            - |e| Error, prints all error type messages
+            - |s| Success, prints all success and complete type messages
+            - |t| Timing, prints all timing type messages
+            - |c| Count, prints all count type messages
 
-                These can be used together, a loglevel of "ts" for example
-                would allow for both timing and success type messages.
+            These can be used together, a loglevel of "ts" for example
+            would allow for both timing and success type messages.
 
-                You may add your own level spec with :meth:add_level
+            You may add your own level spec with :meth:add_level
         """
         self.message = list(messages)
         self.levelmap = {}
@@ -1478,7 +1466,7 @@ class Logg(object):
 
             @name: #str single-char name of the loglevel
             @allowed_types: #int one or more types,
-                e.g. :attr:vital.debug.Logg.SUCCESS
+                e.g. :attr:redis_structures.debug.Logg.SUCCESS
         """
         self.levels[name] = set(allowed_types)
 
@@ -1515,7 +1503,7 @@ class Logg(object):
                 of the assigned log level
 
             ..
-                from vital.debug import Logg
+                from redis_structures.debug import Logg
                 logg = Logg(loglevel="v")
 
                 logg("World").log("Hello")
@@ -1541,7 +1529,7 @@ class Logg(object):
                 of the assigned log level
 
             ..
-                from vital.debug import Logg
+                from redis_structures.debug import Logg
                 logg = Logg(loglevel="v")
 
                 logg("World").success("Hello")
@@ -1568,7 +1556,7 @@ class Logg(object):
                 of the assigned log level
 
             ..
-                from vital.debug import Logg
+                from redis_structures.debug import Logg
                 logg = Logg(loglevel="v")
 
                 logg("World").complete("Hello")
@@ -1595,7 +1583,7 @@ class Logg(object):
                 of the assigned log level
 
             ..
-                from vital.debug import Logg
+                from redis_structures.debug import Logg
                 logg = Logg(loglevel="v")
 
                 logg("World").notice("Hello")
@@ -1622,7 +1610,7 @@ class Logg(object):
                 of the assigned log level
 
             ..
-                from vital.debug import Logg
+                from redis_structures.debug import Logg
                 logg = Logg(loglevel="v")
 
                 logg("World").warning("Hello")
@@ -1649,7 +1637,7 @@ class Logg(object):
                 of the assigned log level
 
             ..
-                from vital.debug import Logg
+                from redis_structures.debug import Logg
                 logg = Logg(loglevel="v")
 
                 logg("World").error("Hello")
@@ -1674,7 +1662,7 @@ class Logg(object):
                 of the assigned log level
 
             ..
-                from vital.debug import Logg
+                from redis_structures.debug import Logg
                 logg = Logg(loglevel="v")
 
                 logg("Finished in").timing(0.908)
@@ -1699,7 +1687,7 @@ class Logg(object):
                 of the assigned log level
 
             ..
-                from vital.debug import Logg
+                from redis_structures.debug import Logg
                 logg = Logg(loglevel="v")
 
                 logg("Total apps").count(3)
@@ -1725,7 +1713,7 @@ class Logg(object):
 
     def format_messages(self, messages):
         """ Formats several messages with :class:Look, encodes them
-            with :func:vital.tools.encoding.stdout_encode """
+            with :func:redis_structures.tools.encoding.stdout_encode """
         mess = ""
         for message in self.message:
             if self.pretty:
@@ -1762,7 +1750,7 @@ logg = Logg()
 
 class ProgressBar(object):
     """ ..
-            from vital.debug import ProgressBar
+            from redis_structures.debug import ProgressBar
 
             progress = ProgressBar()
             for x in progress(['hello', 0, 1]):
@@ -1870,7 +1858,7 @@ class NullIO(StringIO):
 
 class Timer(object):
     """ ..
-            from vital.debug import Timer, RandData
+            from redis_structures.debug import Timer, RandData
             import json
 
             t1 = Timer()
@@ -1964,7 +1952,7 @@ class Timer(object):
                 self._array_len += len(self.intervals)
                 self.intervals = []
             return self._array
-        return None
+        return []
 
     def start(self):
         """ Starts the timer """
@@ -2128,12 +2116,12 @@ class Timer(object):
         """
         return OrderedDict([
             ("Intervals", len(self.array)),
-            ("Mean", self.format_time(self.mean)),
-            ("Min", self.format_time(self.min)),
-            ("Median", self.format_time(self.median)),
-            ("Max", self.format_time(self.max)),
-            ("St. Dev.", self.format_time(self.stdev)),
-            ("Total", self.format_time(self.exectime)),
+            ("Mean", self.format_time(self.mean or 0)),
+            ("Min", self.format_time(self.min or 0)),
+            ("Median", self.format_time(self.median or 0)),
+            ("Max", self.format_time(self.max or 0)),
+            ("St. Dev.", self.format_time(self.stdev or 0)),
+            ("Total", self.format_time(self.exectime or 0)),
         ])
 
     def info(self, _print=True):
@@ -2155,7 +2143,7 @@ class Timer(object):
 
 class Compare(object):
     """ ..
-            from vital.debug import Compare, RandData
+            from redis_structures.debug import Compare, RandData
             import json
             import ujson
 
@@ -2205,28 +2193,29 @@ class Compare(object):
             @precision: #int number of decimals to round time intervals to
             @verbose: prints the results with individual :props:Timer.stats
                 included.
-                |‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒|
-                |(dumps<ujson>)                                                |
-                |Intervals: 100                                                |
-                |     Mean: 46.1µs                                             |
-                |      Min: 38.59µs                                            |
-                |   Median: 50.01µs                                            |
-                |      Max: 104.23µs                                           |
-                | St. Dev.: 8.3µs                                              |
-                |    Total: 4.61ms                                             |
-                |-·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·|
-                |(dumps<json>)                                                 |
-                |Intervals: 100                                                |
-                |     Mean: 82.22µs                                            |
-                |      Min: 72.65µs                                            |
-                |   Median: 85.63µs                                            |
-                |      Max: 184.47µs                                           |
-                | St. Dev.: 12.63µs                                            |
-                |    Total: 8.22ms                                             |
-                |-·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·|
-                |#1 ¦   46.1µs            'dumps<ujson>'                       |
-                |#2 ¦  82.22µs    -78.37% 'dumps<json>'                        |
-                |‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒|
+
+            |‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒|
+            | (dumps<ujson>)                                  |
+            | Intervals: 100                                  |
+            |      Mean: 46.1µs                               |
+            |       Min: 38.59µs                              |
+            |    Median: 50.01µs                              |
+            |       Max: 104.23µs                             |
+            |  St. Dev.: 8.3µs                                |
+            |     Total: 4.61ms                               |
+            |-·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--|
+            | (dumps<json>)                                   |
+            | Intervals: 100                                  |
+            |      Mean: 82.22µs                              |
+            |       Min: 72.65µs                              |
+            |    Median: 85.63µs                              |
+            |       Max: 184.47µs                             |
+            |  St. Dev.: 12.63µs                              |
+            |     Total: 8.22ms                               |
+            |-·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--|
+            | #1 ¦   46.1µs            'dumps<ujson>'         |
+            | #2 ¦  82.22µs    -78.37% 'dumps<json>'          |
+            |‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒‒|
         """
         self._callables = []
         self._callable_results = []

@@ -58,7 +58,7 @@ https://github.com/jaredlunde/redis_structures/tree/master/tests
 > map is unmonitored.
 >
 > Behaves like a Python `dict()` without the
-> `__len__` property.
+> `__len__` method.
 
 ```python
 import pickle
