@@ -71,7 +71,7 @@ from redis import StrictRedis, Redis
 from redis_structures.debug import *
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __encoding__ = "utf8"
 __license__ = 'MIT'
 __author__ = "Jared Lunde"
