@@ -48,11 +48,11 @@ from codecs import getencoder
 from functools import wraps
 from collections import *
 
-from redis_structures.tools.encoding import stdout_encode
 from redis_structures.debug import colors, tlds
 
 
 __all__ = (
+  "stdout_encode",
   "get_terminal_width",
   "line",
   "flag",
@@ -77,6 +77,20 @@ __all__ = (
   "get_obj_name",
   "format_obj_name",
 )
+
+
+def stdout_encode(u, default='utf-8'):
+    """ Encodes a given string with the proper standard out encoding
+        If sys.stdout.encoding isn't specified, it this defaults to @default
+
+        @default: default encoding
+
+        -> #str with standard out encoding
+    """
+    # from http://stackoverflow.com/questions/3627793/best-output-type-and-
+    #   encoding-practices-for-repr-functions
+    encoding = sys.stdout.encoding or default
+    return u.encode(encoding, "replace").decode(encoding, "replace")
 
 
 def get_terminal_width():
