@@ -19,22 +19,22 @@
 
    ``Table of contents``
    * ``:class:RedisMap`` behaves similarly to #dict and is a wrapper for
-     simple GET/SET Redis operations
-   * ``:class:RedisDict`` behaves similarly to #dict and is a wrapper for
-     simple GET/SET Redis operations
-   * ``:class:RedisDefaultDict`` behaves similarly to
-     :class:collections.defaultdict and is a wrapper for simple GET/SET
-     Redis operations
+     simple GET/SET Redis STRING operations
    * ``:class:RedisHash`` behaves similarly to #dict and is a wrapper for
      Redis HASH operations
    * ``:class:RedisDefaultHash`` behaves similarly to
      :class:collections.defaultdict and is a wrapper for Redis HASH operations
+   * ``:class:RedisDict`` behaves similarly to #dict and is a wrapper for
+     simple GET/SET Redis STRING operations
+   * ``:class:RedisDefaultDict`` behaves similarly to
+     :class:collections.defaultdict and is a wrapper for simple GET/SET
+     Redis operations
    * ``:class:RedisSet`` behaves similarly to #set and is a wrapper for Redis
      SET operations
    * ``:class:RedisList`` behaves nearly identitical to #list and is a
      wrapper for Redis LIST operations
    * ``:class:RedisSortedSet`` behaves like a #list and #dict hybrid and is a
-     wrapper for Redis Sorted Set operations
+     wrapper for Redis SORTEDSET operations
 
    ``Installation``
    - |pip install redis_structures|
@@ -519,7 +519,7 @@ class RedisMap(BaseRedisStructure):
 
     @property
     def all(self):
-        """ !This can get very expensive!!
+        """ !!This can get very expensive!!
 
             -> #dict of all |{key: value}| entries in :prop:key_prefix of
                 :prop:_client
@@ -1154,13 +1154,13 @@ class RedisDefaultHash(RedisHash):
     __slots__ = (
         "name", "prefix", "serializer", "_client", "_default", "serialized")
 
-    def __init__(self, name, data=None, default={},
+    def __init__(self, name, data=None, default=None,
                  prefix="rs:dict", **kwargs):
         """ :see::meth:RedisHash.__init__
             @default: default value if a given key doesn't exist
         """
         super().__init__(name=name, prefix=prefix, **kwargs)
-        self._default = default
+        self._default = default or {}
         self.update(data or {})
 
     @prepr(

@@ -15,15 +15,15 @@ Redis data structures wrapped with Python.
 #### Table of contents
 * [RedisMap](#redismap) behaves similarly to `dict()` and is a wrapper for
   simple GET/SET Redis operations
+* [RedisHash](#redishash) behaves similarly to `dict()` and is a wrapper for
+  Redis HASH operations
+* [RedisDefaultHash](#redisdefaulthash) behaves similarly to
+  `defaultdict()` and is a wrapper for Redis HASH operations
 * [RedisDict](#redisdict) behaves similarly to `dict()` and is a wrapper for
   simple GET/SET Redis operations
 * [RedisDefaultDict](#redisdefaultdict) behaves similarly to
   `defaultdict()` and is a wrapper for simple GET/SET
   Redis operations
-* [RedisHash](#redishash) behaves similarly to `dict()` and is a wrapper for
-  Redis HASH operations
-* [RedisDefaultHash](#redisdefaulthash) behaves similarly to
-  `defaultdict()` and is a wrapper for Redis HASH operations
 * [RedisSet](#redisset) behaves similarly to `set()` and is a wrapper for Redis
   SET operations
 * [RedisList](#redislist) behaves nearly identitical to `list()` and is a
