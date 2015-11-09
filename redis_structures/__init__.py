@@ -6,18 +6,22 @@
 
    :build-status:https://travis-ci.org/jaredlunde/redis_structures
 --·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--·--
-   ```Redis data structures wrapped with Python.```
 
-   ``Benefits``
-   * |Auto-serialization| using the serializer of your choice
-   * |Auto response decoding| using the encoding of your choice
-   * |Namespace maintanability| via prefix and name class properties
+   ``Redis data structures wrapped with Python.``
+
+   * |Auto-serialization| using the serializer of your choice (optional)
+   * |Auto response decoding| using the encoding of your choice (optional)
+   * |Namespace maintanability| as every structure is initialized with its
+     own name and key prefix
    * |Pythonic interface| provides nearly all of the same methods available to
-     builtin Python structures, so there is a minimal learning curve
+     sister builtin Python structures, so there is a minimal learning curve
    * |Persistent| dictionaries, lists and sets which perhaps won't fit in the
      local memory, or that you merely wish to save
 
+   =====================
    ``Table of contents``
+
+
    * ``:class:RedisMap`` behaves similarly to #dict and is a wrapper for
      simple GET/SET Redis STRING operations
    * ``:class:RedisHash`` behaves similarly to #dict and is a wrapper for
@@ -36,18 +40,25 @@
    * ``:class:RedisSortedSet`` behaves like a #list and #dict hybrid and is a
      wrapper for Redis SORTEDSET operations
 
-   ``Installation``
-   - |pip install redis_structures|
-   ```or```
-   - |git clone https://github.com/jaredlunde/redis_structures.git|
-     |python ./redis_structures/setup.py install|
 
+   ================
+   ``Installation``
+   1. |pip install redis_structures|
+   2. |git clone https://github.com/jaredlunde/redis_structures.git|
+      |python ./redis_structures/setup.py install|
+
+
+   ========================
    ``Package Requirements``
    * |redis-py| https://github.com/andymccurdy/redis-py
 
+
+   =======================
    ``System Requirements``
    * |Python 3.3+|
 
+
+   ========================
    ``Unit tests available``
    * https://github.com/jaredlunde/redis_structures/tree/master/tests
 
@@ -244,11 +255,11 @@ class BaseRedisStructure(object):
 
 
 class RedisMap(BaseRedisStructure):
-    """ ``RedisMap behaves like a python #dict, without a |__len__| method``
+    """ - - - - - - - - -
+        ``Usage Example``
         ..
             import pickle
             from redis_structures import StrictRedis, RedisMap
-
 
             rm = RedisMap("practice", client=StrictRedis(), serializer=pickle)
             print(rm)
@@ -311,12 +322,13 @@ class RedisMap(BaseRedisStructure):
         'encoding', 'decode_responses')
 
     def __init__(self, name, data=None, prefix="rs:map", **kwargs):
-        """ Memory-persistent key/value-backed mapping
+        """ `RedisMap`
+
+            Memory-persistent key/value-backed mapping.
+
             For performance reasons it is recommended that if you
-            need iter() methods like keys() you should use RedisHash
-            and not RedisMap. The only advantage to RedisMap is a
-            simple |{key: value}| get, set interface. The size of the
-            map is unmonitored.
+            need |iter()| methods like |keys()| you should use :class:RedisHash
+            and not RedisMap, unless your dataset is small.
 
             :see::class:BaseRedisStructure
             @data: #dict or :class:RedisMap initial data to update this
@@ -538,7 +550,9 @@ class RedisMap(BaseRedisStructure):
 
 
 class RedisDict(RedisMap):
-    """ ..
+    """ - - - - - - - - -
+        ``Usage Example``
+        ..
             from redis_structures import StrictRedis, RedisDict
 
             rd = RedisDict("practice", client=StrictRedis(), serialize=True)
@@ -608,12 +622,20 @@ class RedisDict(RedisMap):
         "serialized")
 
     def __init__(self, name, data=None, prefix="rs:dict", size_mod=5, **kwargs):
-        """ Memory-persistent key/value-backed dictionaries
+        """ `RedisDict`
+
+            Memory-persistent key/value-backed dictionaries.
+
             For performance reasons it is recommended that if you
-            need iter() methods like keys() you should use RedisHash
-            and not RedisDict. The only advantage to RedisDict is a
-            simple {key: value} get, set interface with the ability to
-            call a len() on a given group of key/value pairs.
+            need |iter()| methods like |keys()| you should use RedisHash
+            and not RedisDict.
+
+            The only advantage to RedisDict is a simple {key: value} get,
+            set interface with the ability to call a |len()| on a given group
+            of key/value pairs. However, |len()| will not return properly if
+            operations outside of this wrapper are performed on the keys which
+            add and remove them, as this class merely tallies what goes in and
+            what goes out via another redis key in order to get the length.
 
             :see::class:BaseRedisStructure.__init__
             @data: #dict or :class:RedisDict initial data to update this
@@ -762,7 +784,9 @@ class RedisDict(RedisMap):
 
 
 class RedisDefaultDict(RedisDict):
-    """ ..
+    """ - - - - - - - - -
+        ``Usage Example``
+        ..
             from redis_structures import StrictRedis, RedisDefaultDict
 
             rd = RedisDefaultDict(
@@ -832,14 +856,14 @@ class RedisDefaultDict(RedisDict):
         "name", "prefix", "_size_mod", "serializer", "_client", "_default",
         "serialized")
 
-    def __init__(self, name, data={}, default=None,
+    def __init__(self, name, data=None, default=None,
                  prefix="rs:defaultdict", **kwargs):
         """ :see::meth:RedisDict.__init__
             @default: default value if a given key doesn't exist
         """
         super().__init__(name=name, prefix=prefix, **kwargs)
         self._default = default or dict()
-        self.update(data)
+        self.update(data or {})
 
     @prepr(
         ('name', 'cyan'), 'key_prefix', '_bucket_key', '_default',
@@ -864,7 +888,9 @@ class RedisDefaultDict(RedisDict):
 
 
 class RedisHash(BaseRedisStructure):
-    """ ..
+    """ - - - - - - - - -
+        ``Usage Example``
+        ..
             from redis_structures import StrictRedis, RedisHash
 
             rh = RedisHash("practice", client=StrictRedis(), serialize=True)
@@ -931,7 +957,9 @@ class RedisHash(BaseRedisStructure):
         "name", "prefix", "serializer", "_client", "_default", "serialized")
 
     def __init__(self, name, data=None, prefix="rs:hash", **kwargs):
-        """ Memory-persistent hashes, differs from dict because it uses the
+        """ `RedisHash`
+
+            Memory-persistent hashes, differs from dict because it uses the
             Redis Hash methods as opposed to simple set/get. In cases when the
             size is fewer than ziplist max entries(512 by defualt) and the value
             sizes are less than the defined ziplist max size(64 bytes), there
@@ -1087,7 +1115,9 @@ class RedisHash(BaseRedisStructure):
 
 
 class RedisDefaultHash(RedisHash):
-    """ ..
+    """ - - - - - - - - -
+        ``Usage Example``
+        ..
             from redis_structures import StrictRedis, RedisDefaultHash
 
             rh = RedisDefaultHash("practice", client=StrictRedis(), serialize=True)
@@ -1186,7 +1216,9 @@ class RedisDefaultHash(RedisHash):
 
 
 class RedisList(BaseRedisStructure):
-    """ ..
+    """ - - - - - - - - -
+        ``Usage Example``
+        ..
             from redis_structures import StrictRedis, RedisList
 
             rl = RedisList("practice", client=StrictRedis(), serialize=True)
@@ -1240,7 +1272,9 @@ class RedisList(BaseRedisStructure):
         "name", "prefix", "serializer", "_client", "_default", "serialized")
 
     def __init__(self, name, data=None, prefix="rs:list", **kwargs):
-        """ Memory-persistent lists
+        """ `RedisList`
+
+            Memory-persistent lists
             Because this is not a linked list, it isn't recommend that you
             utilize certain methods available on long lists.  For instance,
             checking whether or not a value is contained within the list does
@@ -1513,7 +1547,9 @@ class RedisList(BaseRedisStructure):
 
 
 class RedisSet(BaseRedisStructure):
-    """ ..
+    """ - - - - - - - - -
+        ``Usage Example``
+        ..
             from redis_structures import StrictRedis, RedisSet
 
             rs = RedisSet("practice", client=StrictRedis(), serialize=True)
@@ -1582,7 +1618,9 @@ class RedisSet(BaseRedisStructure):
         "name", "prefix", "serializer", "_client", "_default", "serialized")
 
     def __init__(self, name, data=None, prefix="rs:set", **kwargs):
-        """ Memory-persistent Sets
+        """ `RedisSet`
+
+            Memory-persistent Sets
             This structure behaves nearly the same way that a Python set()
             does. All methods are production-ready.
 
@@ -1846,7 +1884,9 @@ class RedisSet(BaseRedisStructure):
 
 
 class RedisSortedSet(BaseRedisStructure):
-    """ ..
+    """ - - - - - - - - -
+        ``Usage Example``
+        ..
             from redis_structures import StrictRedis, RedisSortedSet
 
             rs = RedisSortedSet(
@@ -1925,7 +1965,9 @@ class RedisSortedSet(BaseRedisStructure):
 
     def __init__(self, name, data=None, prefix="rs:sorted_set",
                  cast=float, reversed=None, **kwargs):
-        """ An interesting, sort of hybrid dict/list structure.  You can get
+        """ `RedisSortedSet`
+
+            An interesting, sort of hybrid dict/list structure.  You can get
             members from the sorted set by their index (rank) and  you can
             retrieve their associated values by their member names.
             You can iter() the set normally or in reverse.
