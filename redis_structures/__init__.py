@@ -82,7 +82,7 @@ from redis import StrictRedis, Redis
 from redis_structures.debug import *
 
 
-__version__ = "0.1.3"
+__version__ = "0.1.5"
 __encoding__ = "utf8"
 __license__ = 'MIT'
 __author__ = "Jared Lunde"
