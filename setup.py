@@ -27,6 +27,7 @@ setup(
     author='Jared Lunde',
     author_email='jared.lunde@gmail.com',
     url='https://github.com/jaredlunde/redis_structures',
+    include_package_data=True,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
