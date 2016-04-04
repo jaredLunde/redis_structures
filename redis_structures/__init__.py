@@ -74,9 +74,8 @@ except:
 
 import pickle
 import hashlib
-import functools
 from random import randint
-from collections import UserDict, OrderedDict, UserList
+from collections import UserDict, OrderedDict
 
 from redis import StrictRedis, Redis
 from redis_structures.debug import *
@@ -349,7 +348,7 @@ class RedisMap(BaseRedisStructure):
         """ -> value for @key """
         try:
             result = self._loads(self._client.get(self.get_key(key)))
-            assert result
+            assert result is not None
             return result
         except (AssertionError, TypeError):
             raise KeyError('Key `{}` not in `{}`'.format(key, self.key_prefix))
@@ -678,7 +677,7 @@ class RedisDict(RedisMap):
         """ :see::meth:RedisMap.__getitem__ """
         try:
             result = self._loads(self._client.get(self.get_key(key)))
-            assert result
+            assert result is not None
             return result
         except (AssertionError, TypeError):
             raise KeyError('Key `{}` not in `{}`'.format(key, self.key_prefix))
@@ -879,11 +878,10 @@ class RedisDefaultDict(RedisDict):
 
     def get(self, key, default=None):
         """ Gets @key from :prop:key_prefix, defaulting to @default """
-        try:
-            result = self._loads(self._client.get(self.get_key(key)))
-            assert result
+        result = self._loads(self._client.get(self.get_key(key)))
+        if result is not None:
             return result
-        except AssertionError:
+        else:
             return default or self._default
 
 
@@ -993,7 +991,7 @@ class RedisHash(BaseRedisStructure):
         """ :see::meth:RedisMap.__getitem__ """
         try:
             result = self._loads(self._client.hget(self.key_prefix, field))
-            assert result
+            assert result is not None
             return result
         except (AssertionError, TypeError):
             raise KeyError('Key `{}` not in `{}`'.format(
@@ -1209,7 +1207,7 @@ class RedisDefaultHash(RedisHash):
         """ Gets @key from :prop:key_prefix, defaulting to @default """
         try:
             result = self._loads(self._client.hget(self.key_prefix, key))
-            assert result
+            assert result is not None
             return result
         except (AssertionError, KeyError):
             return default or self._default

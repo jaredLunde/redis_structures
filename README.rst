@@ -38,7 +38,7 @@ Getting Started
 
     >>> from redis_structures import StrictRedis, RedisHash
     >>> client = StrictRedis(host='localhost', port=6379, db=0)
-    >>> rh = RedisHash("my_hash", prefix="rs:hash" client=StrictRedis)
+    >>> rh = RedisHash("my_hash", prefix="rs:hash" client=client)
     >>> rh['hello'] = "world"  # sets the field name 'hello' to value 'world' in
     >>>                        # redis under the key rs:hash:my_hash
     >>> rh['hello']
