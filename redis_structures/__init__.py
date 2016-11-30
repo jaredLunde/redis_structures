@@ -1,5 +1,3 @@
-#!/usr/bin/python3 -S
-# -*- coding: utf-8 -*-
 """
 
   `Redis Structures`
@@ -81,7 +79,7 @@ from redis import StrictRedis, Redis
 from redis_structures.debug import *
 
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 __encoding__ = "utf8"
 __license__ = 'MIT'
 __author__ = "Jared Lunde"
