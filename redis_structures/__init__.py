@@ -137,7 +137,10 @@ class BaseRedisStructure(object):
         self._default = None
         if not encoding:
             conn = self._client.connection_pool.get_connection("")
-            encoding = conn.encoding
+            try:
+                encoding = conn.encoding
+            except AttributeError:
+                encoding = conn.encoder.encoding
             self._client.connection_pool.release(conn)
         self.encoding = encoding
         self.decode_responses = decode_responses
