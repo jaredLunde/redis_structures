@@ -20,7 +20,7 @@ with open(_dir + '/requirements.txt') as f:
 
 setup(
     name='redis_structures',
-    version='0.1.6',
+    version='0.1.7',
     license='MIT',
     description='Redis data structures wrapped with Python 3.',
     long_description=readme(),
